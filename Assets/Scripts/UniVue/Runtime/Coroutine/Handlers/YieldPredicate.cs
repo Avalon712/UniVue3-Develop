@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Framwork.Coroutine
+namespace UniVue.Coroutine
 {
     public sealed class YieldPredicate : YieldHandler
     {

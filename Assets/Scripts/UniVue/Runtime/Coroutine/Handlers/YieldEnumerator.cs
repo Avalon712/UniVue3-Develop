@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 
-namespace Framwork.Coroutine
+namespace UniVue.Coroutine
 {
     public sealed class YieldEnumerator : YieldHandler
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Framwork.Coroutine
+namespace UniVue.Coroutine
 {
     public readonly struct CoroutineID : IEquatable<CoroutineID>
     {

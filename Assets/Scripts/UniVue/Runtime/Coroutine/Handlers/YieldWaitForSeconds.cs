@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Framwork.Coroutine
+namespace UniVue.Coroutine
 {
     public sealed class YieldWaitForSeconds : YieldHandler
     {

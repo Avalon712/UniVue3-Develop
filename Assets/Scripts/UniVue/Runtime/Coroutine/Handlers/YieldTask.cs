@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Framwork.Coroutine
+namespace UniVue.Coroutine
 {
     public sealed class YieldTask : YieldHandler
     {

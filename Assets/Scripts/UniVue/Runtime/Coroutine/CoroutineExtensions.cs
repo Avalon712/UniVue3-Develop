@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace Framwork.Coroutine
+namespace UniVue.Coroutine
 {
     public static class CoroutineExtensions
     {

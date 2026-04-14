@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Framwork.Coroutine;
+using UniVue.Coroutine;
 using Framwork.Utils;
 using UnityEngine;
 using UnityEngine.Scripting;

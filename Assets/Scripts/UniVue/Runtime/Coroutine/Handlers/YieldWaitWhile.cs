@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Framwork.Coroutine
+namespace UniVue.Coroutine
 {
     public sealed class YieldWaitWhile : YieldHandler
     {

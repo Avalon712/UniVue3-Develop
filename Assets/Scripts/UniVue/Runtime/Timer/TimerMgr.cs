@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Framwork.Coroutine;
+using UniVue.Coroutine;
 using UnityEngine;
 using UniVue.Common;
 using UniVue.Internal;

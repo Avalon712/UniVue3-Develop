@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Framwork.Coroutine
+namespace UniVue.Coroutine
 {
     public abstract class YieldHandler
     {
