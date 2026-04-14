@@ -1,0 +1,20 @@
+{
+  "name": "UniVue.UGUI.Editor",
+  "rootNamespace": "UniVue.Editor.UGUI",
+  "references": [
+    "GUID:e1839c16d7cd29744bb1aebcdd5f236b",
+    "GUID:ed231924b8cc4d34b98948b0ecb3e26d",
+    "GUID:3d9cecfccb012844daaae6d5cda79c7b"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
