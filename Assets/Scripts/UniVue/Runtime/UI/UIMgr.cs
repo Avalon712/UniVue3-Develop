@@ -21,8 +21,6 @@ namespace UniVue.UI
         private static IUILayerMgr LayerMgr { get; set; }
 
         public static RenderContext Renderer { get; private set; }
-
-        public static UIRenderer UIRenderer { get; private set; }
         
         public static RedPointMgr RedPointMgr { get; private set; }
 
@@ -105,7 +103,6 @@ namespace UniVue.UI
                     .Build();
 
             Renderer = new RenderContext();
-            UIRenderer = new UIRenderer();
         }
 
 
