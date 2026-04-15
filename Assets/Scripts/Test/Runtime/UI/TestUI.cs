@@ -3,7 +3,6 @@ using Game.UI;
 using UnityEngine;
 using UniVue.Model;
 using UniVue.Timer;
-using UniVue.UGUI;
 using UniVue.UI;
 
 namespace Game

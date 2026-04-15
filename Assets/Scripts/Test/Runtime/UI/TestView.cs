@@ -3,8 +3,8 @@ using UnityEngine;
 using UniVue.Common;
 using UniVue.Event;
 using UniVue.Model;
-using UniVue.UGUI;
 using UniVue.UI;
+using UniVue.UI.Widegts;
 using Debug = UnityEngine.Debug;
 
 namespace Game

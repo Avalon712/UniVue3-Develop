@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UniVue.UI;
 using Object = UnityEngine.Object;
 
-namespace UniVue.UGUI
+namespace UniVue.UI
 {
     /// <summary>
     /// 将场景中的Canvas作为根节点，所有层级的渲染都使用此Canvas

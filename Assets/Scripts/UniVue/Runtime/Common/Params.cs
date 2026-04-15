@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Framwork.Utils;
+using UniVue.Internal;
 
 namespace UniVue.Common
 {
@@ -77,6 +78,16 @@ namespace UniVue.Common
             return list;
         }
 
+        public int IndexOf(T item)
+        {
+            for (int i = 0; i < Length; i++)
+            {
+                if(InternalEqualityComparer<T>.Comparer.Equals(this[i], item)) return i;
+            }
+
+            return -1;
+        }
+        
         public Enumerator<T> GetEnumerator()
         {
             return new Enumerator<T>(Length, this);

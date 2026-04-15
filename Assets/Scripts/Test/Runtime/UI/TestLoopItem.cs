@@ -1,5 +1,5 @@
 using TMPro;
-using UniVue.UGUI;
+using UniVue.UI.Widegts;
 
 namespace Game
 {

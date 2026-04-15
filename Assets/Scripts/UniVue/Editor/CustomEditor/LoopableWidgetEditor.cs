@@ -4,8 +4,9 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 using UniVue.Editor;
+using UniVue.UI.Widegts;
 
-namespace UniVue.UGUI.Editor
+namespace UniVue.Editor
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(Loopable), true)]

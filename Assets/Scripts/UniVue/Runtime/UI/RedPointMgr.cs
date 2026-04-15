@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Framwork.Utils;
 using UniVue.Coroutine;
 using UniVue.Common;
 
@@ -8,26 +9,33 @@ namespace UniVue.UI
 {
     public sealed class RedPointMgr
     {
-        private static Type _redPointKeyType;
-        private readonly Dictionary<ulong, RedPointNode> _allNodes = new();
-        private readonly HashSet<ulong> _dirtyTrees = new();
-        private readonly HashSet<ulong> _dynamicDependencies = new();
-        private readonly Dictionary<ulong, Action<bool>> _listeners = new();
-        private readonly Dictionary<ulong, bool> _recordForceStaus = new(); //不根据内置激活规则设置的状态
+        public const uint RootMaxCount = ushort.MaxValue;
+        public const uint NotRootMaxCount = byte.MaxValue - 1;
+        
+        private readonly Dictionary<ulong, RedPointNode> _allNodes = new(128);
+        private readonly HashSet<ulong> _dirtyTrees = new(16);
+        /// <summary>
+        /// 动态创建的红点树，只存根节点的key
+        /// </summary>
+        private readonly HashSet<ulong> _dynamicRoots = new(128);
+        private readonly Dictionary<ulong, Action<bool>> _listeners = new(128);
+        private readonly Dictionary<ulong, bool> _recordForceStaus = new(32); //不根据内置激活规则设置的状态
 
         /// <summary>
-        /// key=根节点的Key
+        /// key=根节点的Key，所有红点树的根节点
         /// </summary>
         private readonly Dictionary<ulong, RedPointNode> _trees = new();
 
-        internal RedPointMgr()
+        public RedPointMgr() { }
+
+        public RedPointMgr(Type redPointKeyType)
         {
+            Initialize(redPointKeyType);
         }
 
-        public void Initialize(Type redPointKeyType)
+        private void Initialize(Type redPointKeyType)
         {
-            _redPointKeyType = redPointKeyType;
-            if (Enum.GetValues(_redPointKeyType) is not ulong[] keys)
+            if (Enum.GetValues(redPointKeyType) is not ulong[] keys)
             {
                 LogUtil.Warn("RedPointMgr初始化失败，RedPointKey枚举类型必须继承自ulong");
                 return;
@@ -39,11 +47,11 @@ namespace UniVue.UI
                 _allNodes[key] = node;
                 node.key = key;
 #if UNITY_EDITOR
-                node.keyName = Enum.GetName(_redPointKeyType, key);
+                node.keyName = Enum.GetName(redPointKeyType, key);
 #endif
             }
 
-            Array.Sort(keys, Sort);
+            Array.Sort(keys, Compare);
             foreach (ulong key in keys)
             {
                 RedPointNode node = _allNodes[key];
@@ -188,28 +196,48 @@ namespace UniVue.UI
 
         public bool IsDynamicDependency(ulong key)
         {
-            return _dynamicDependencies.Contains(key);
+            return _dynamicRoots.Contains(GetRootKey(key));
+        }
+
+        public void GetChildrenKeysNoneAlloc(ulong key, HashSet<ulong> childrenKeys)
+        {
+            ExceptionUtils.ThrowIfArgNull(childrenKeys, nameof(childrenKeys));
+            if (!_allNodes.TryGetValue(key, out RedPointNode node)) return;
+            foreach (RedPointNode child in node.children)
+            {
+                childrenKeys.Add(child.key);
+            }
+        }
+
+        public bool HaveChildren(ulong key)
+        {
+            if (!_allNodes.TryGetValue(key, out RedPointNode node)) return false;
+            return node.children.Count > 0;
         }
 
         /// <summary>
         /// 创建一颗红点树
         /// </summary>
         /// <param name="rule">激活规则</param>
-        /// <param name="keyName">调试时有用</param>
+        /// <param name="keyName">调试时可以在窗口中看见别名</param>
         /// <returns>红点树的根节点的key</returns>
         public ulong CreateRedPointTree(RedPointRule rule = RedPointRule.Or, string keyName = "")
         {
             ushort maxRootVal = 0;
-            foreach (RedPointNode node in _trees.Values)
+            bool isFound = false;
+            for (uint i = 0; i <= RootMaxCount; i++)
             {
-                ushort rootVal = (ushort)(node.key >> 48);
-                if (rootVal > maxRootVal)
-                    maxRootVal = rootVal;
+                if (!_allNodes.ContainsKey(i))
+                {
+                    maxRootVal = (ushort)i;
+                    isFound = true;
+                    break;
+                }
             }
 
-            if (maxRootVal >= 65534)
+            if (!isFound)
             {
-                LogUtil.Error("红点树根key已达最大值，无法再创建新树");
+                LogUtil.Error("红点树根key已经全部被用完(0~65535)，无法再创建新树");
                 return 0;
             }
 
@@ -224,7 +252,7 @@ namespace UniVue.UI
 #endif
             _allNodes[key] = root;
             _trees.Add(key, root);
-            _dynamicDependencies.Add(key);
+            _dynamicRoots.Add(key);
             return key;
         }
 
@@ -284,7 +312,6 @@ namespace UniVue.UI
 #endif
 
             _allNodes[childKey] = child;
-            _dynamicDependencies.Add(childKey);
             _dirtyTrees.Add(GetRootKey(childKey));
             return childKey;
         }
@@ -292,10 +319,10 @@ namespace UniVue.UI
         /// <summary>
         /// 删除动态添加的依赖节点。仅当 IsDynamicDependency(key) 为 true 时可用。
         /// </summary>
-        /// <param name="key">要删除的红点Key，如果是非叶子节点，则已当前节点形成的子树会被整个删除</param>
+        /// <param name="key">要删除的红点Key，如果是非叶子节点，则以当前节点形成的子树会被整个删除</param>
         public void DeleteDependency(ulong key)
         {
-            if (!_dynamicDependencies.Contains(key))
+            if (!_dynamicRoots.Contains(GetRootKey(key)))
             {
                 LogUtil.Warn($"RedPointMgr.DeleteDependency()失败，key={key}不是动态添加的节点");
                 return;
@@ -327,7 +354,8 @@ namespace UniVue.UI
             if (setParentNull)
                 node.parent = null;
             _allNodes.Remove(node.key);
-            _dynamicDependencies.Remove(node.key);
+            if (IsRoot(node.key))
+                _dynamicRoots.Remove(node.key);
             _recordForceStaus.Remove(node.key);
         }
 
@@ -336,7 +364,7 @@ namespace UniVue.UI
             return _allNodes.ContainsKey(key);
         }
 
-        private static int Sort(ulong a, ulong b)
+        public static int Compare(ulong a, ulong b)
         {
             int depthA = GetDepth(a);
             int depthB = GetDepth(b);
@@ -346,7 +374,7 @@ namespace UniVue.UI
         /// <summary>
         /// 获取根节点的 key 值（仅高 16 位，低 48 位为 0）
         /// </summary>
-        private static ulong GetRootKey(ulong key)
+        public static ulong GetRootKey(ulong key)
         {
             return (key >> 48) << 48;
         }
@@ -354,7 +382,7 @@ namespace UniVue.UI
         /// <summary>
         /// 判断 key1 是否是 key2 的父亲
         /// </summary>
-        private static bool IsParentOf(ulong key1, ulong key2)
+        public static bool IsParentOf(ulong key1, ulong key2)
         {
             return GetParentKey(key2) == key1;
         }
@@ -362,7 +390,7 @@ namespace UniVue.UI
         /// <summary>
         /// 获取父节点的 key 值
         /// </summary>
-        private static ulong GetParentKey(ulong key)
+        public static ulong GetParentKey(ulong key)
         {
             int depth = GetDepth(key);
             if (depth <= 0) return 0;
@@ -373,7 +401,7 @@ namespace UniVue.UI
         /// <summary>
         /// 是否为根节点
         /// </summary>
-        private static bool IsRoot(ulong key)
+        public static bool IsRoot(ulong key)
         {
             return (key & 0x0000FFFFFFFFFFFFUL) == 0;
         }
@@ -381,7 +409,7 @@ namespace UniVue.UI
         /// <summary>
         /// 获取当前节点与子节点之间的规则
         /// </summary>
-        private static RedPointRule GetRule(ulong key)
+        public static RedPointRule GetRule(ulong key)
         {
             int depth = GetDepth(key);
             int shift = depth == 0 ? 48 : 8 * (6 - depth);
@@ -392,7 +420,7 @@ namespace UniVue.UI
         /// <summary>
         /// 获取节点深度（子层级数）。根=0，深度1=1个子字节，深度2=2个子字节...
         /// </summary>
-        private static int GetDepth(ulong value)
+        public static int GetDepth(ulong value)
         {
             if ((value & 0x0000FFFFFFFFFFFFUL) == 0) return 0;
             int depth = 0;
@@ -402,7 +430,7 @@ namespace UniVue.UI
             return depth;
         }
 
-        public sealed class RedPointNode
+        internal sealed class RedPointNode
         {
             public readonly List<RedPointNode> children = new(0);
             public ulong key;

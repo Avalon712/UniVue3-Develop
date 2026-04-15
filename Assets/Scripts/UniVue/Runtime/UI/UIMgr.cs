@@ -22,6 +22,8 @@ namespace UniVue.UI
 
         public static RenderContext Renderer { get; private set; }
 
+        public static UIRenderer UIRenderer { get; private set; }
+        
         public static RedPointMgr RedPointMgr { get; private set; }
 
         /// <summary>
@@ -47,8 +49,7 @@ namespace UniVue.UI
             }
 
             Initialize(loader, layerMgr, lazyDisposeInterval);
-            RedPointMgr = new RedPointMgr();
-            RedPointMgr.Initialize(redPointKeyEnumType);
+            RedPointMgr = new RedPointMgr(redPointKeyEnumType);
         }
 
         /// <summary>
@@ -104,6 +105,7 @@ namespace UniVue.UI
                     .Build();
 
             Renderer = new RenderContext();
+            UIRenderer = new UIRenderer();
         }
 
 
