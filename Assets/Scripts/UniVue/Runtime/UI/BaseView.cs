@@ -93,7 +93,7 @@ namespace UniVue.UI
         /// <param name="mountNode">子界面的挂载点，如果为null，则挂载到UI节点</param>
         /// <param name="callback">界面打开完成后回调</param>
         /// <param name="args">界面传递参数</param>
-        /// <typeparam name="T">界面类型</typeparam>
+        /// <typeparam name="T">界面类型（GameObject身上没有时会自动挂载此脚本）</typeparam>
         public void OpenChildView<T>(Transform mountNode = null, Action callback = null, params object[] args)
             where T : BaseView
         {
@@ -127,6 +127,8 @@ namespace UniVue.UI
                     GameObjectUtils.RectTransformClone(viewPrefab, !mountNode ? UI.transform : mountNode);
                 viewObj.name = viewPrefab.name;
                 BaseView childView = viewObj.GetComponent<BaseView>();
+                if(!childView)
+                    viewObj.AddComponent<BaseView>();
                 childView.Parent = this;
                 childView.ViewName = viewObj.name;
                 _viewUIs.Add(childView);
@@ -137,24 +139,11 @@ namespace UniVue.UI
         }
 
         /// <summary>
-        /// 打开一个已经创建的组件
-        /// </summary>
-        /// <param name="componentName"></param>
-        public void ShowComponent(string componentName)
-        {
-            CheckDisposedAndInitialized();
-            if (Disposed) return;
-            foreach (BaseComponent component in Components)
-                if (component.name == componentName)
-                    component.OnShowInternal();
-        }
-
-        /// <summary>
         /// 动态添加组件
         /// </summary>
         /// <param name="mountNode">挂载点，这个挂载点必须属性当前UI节点</param>
-        /// <typeparam name="T"></typeparam>
-        public void ShowComponent<T>(Transform mountNode = null) where T : BaseComponent
+        /// <typeparam name="T">组件类型，如果GameObject身上没有挂载此组件则会自动添加此组件</typeparam>
+        public void AddComponent<T>(Transform mountNode = null) where T : BaseComponent
         {
             CheckDisposedAndInitialized();
             if (Disposed) return;
@@ -162,7 +151,7 @@ namespace UniVue.UI
             if (mountNode && mountNode.TryGetComponent(out BaseView child))
             {
                 LogUtil.Warn($"挂载点是一个子View，将调用子View{child.ViewName}[{child.GetType().FullName}]的AddComponent<T>()方法实现");
-                child.ShowComponent<T>();
+                child.AddComponent<T>();
                 return;
             }
 
@@ -177,22 +166,16 @@ namespace UniVue.UI
 
                 GameObject uiObj = GameObjectUtils.RectTransformClone(uiPrefab, !mountNode ? UI.transform : mountNode);
                 BaseComponent component = uiObj.GetComponent<T>();
+                if (!component)
+                    component = uiObj.AddComponent<T>();
+                
                 _viewUIs.Add(component);
                 component.View = this;
                 component.OnCreateInternal(uiObj);
-                component.OnShowInternal();
+                component.Show();
             });
         }
-
-        public void HideComponent(string componentName)
-        {
-            CheckDisposedAndInitialized();
-            if (Disposed) return;
-            foreach (BaseComponent component in Components)
-                if (component.name == componentName)
-                    component.OnHideInternal();
-        }
-
+        
         public void CloseChildView(string viewName)
         {
             CheckDisposedAndInitialized();
@@ -234,7 +217,7 @@ namespace UniVue.UI
                 if (ui is BaseView subView)
                     subView.OnOpenInternal(args);
                 else if (ui is BaseComponent component)
-                    component.OnShowInternal();
+                    component.Show();
             }
 
             OnOpen();
@@ -249,7 +232,7 @@ namespace UniVue.UI
             KillAllTimers();
             //关闭所有子界面和组件
             foreach (BaseView childView in ChildViews) childView.OnCloseInternal();
-            foreach (BaseComponent component in Components) component.OnHideInternal();
+            foreach (BaseComponent component in Components) component.Hide();
             OnClose();
         }
 

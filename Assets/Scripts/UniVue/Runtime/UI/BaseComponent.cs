@@ -28,7 +28,7 @@ namespace UniVue.UI
             OnKill();
         }
 
-        internal void OnShowInternal()
+        public void Show()
         {
             if (Status) return;
             CheckDisposedAndInitialized();
@@ -38,7 +38,7 @@ namespace UniVue.UI
             OnShow();
         }
 
-        internal void OnHideInternal()
+        public void Hide()
         {
             if (!Status) return;
             CheckDisposedAndInitialized();
@@ -47,18 +47,7 @@ namespace UniVue.UI
             Status = false;
             OnHide();
         }
-
-        public void Show()
-        {
-            if (Status) return;
-            View?.ShowComponent(Name);
-        }
-
-        public void Hide()
-        {
-            if (!Status) return;
-            View?.HideComponent(Name);
-        }
+        
 
 #region 子类重写
 

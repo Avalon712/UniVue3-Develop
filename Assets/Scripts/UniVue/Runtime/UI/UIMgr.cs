@@ -127,7 +127,7 @@ namespace UniVue.UI
         /// </summary>
         /// <param name="callback">界面打开完成后回调</param>
         /// <param name="args">界面传递参数（如果界面在加载还没有完成时中又被执行了一次Open，此时此参数无效）</param>
-        /// <typeparam name="T">界面类型</typeparam>
+        /// <typeparam name="T">界面类型（如果GameObject身上没有添加此组件则会自动添加此组件）</typeparam>
         public static void Open<T>(Action callback = null, params object[] args) where T : BaseView
         {
             Type viewType = typeof(T);
@@ -178,6 +178,8 @@ namespace UniVue.UI
 
                 GameObject viewObj = GameObjectUtils.RectTransformClone(viewPrefab, LayerMgr.HideLayer.transform);
                 BaseView newView = viewObj.GetComponent<T>();
+                if(!newView)
+                    newView = viewObj.AddComponent<T>();
                 newView.transform.SetParent(LayerMgr.GetLayerRoot(newView.Layer).transform);
                 _openedViews[viewName] = newView;
                 viewObj.name = viewName;
