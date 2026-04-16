@@ -34,13 +34,15 @@ namespace UniVue.UI
 
         public GameObject UI { get; private set; }
 
-        public bool RenderEnabled
+        public bool RenderStatus
         {
             get => !Disposed && (_graph == null || _graph.Enable);
             internal set
             {
-                if (Disposed) return;
-                if (_graph != null) _graph.Enable = value;
+                if (Disposed || _graph == null || _graph.Enable == value) return;
+                _graph.Enable = value;
+                if (value)
+                    RefreshUI();
             }
         }
 
@@ -101,6 +103,17 @@ namespace UniVue.UI
         }
 
 #region 辅助函数
+
+        /// <summary>
+        /// 刷新UI（绑定的所有渲染函数都会被执行一次，当渲染状态从Disable变为Enable时会自动调用一次此函数）
+        /// <remarks>绝大多数情况下你都无需手动调用此函数。此函数不是精准式的更新，只要有脏标记则会将此UI绑定的所有渲染函数都执行一遍</remarks>
+        /// </summary>
+        /// <param name="force">是否强制刷新，即不管有无变化都重新渲染一遍（默认情况只有在当前UI的渲染状态处于Disable期间有渲染状态的变化时才会真正调用）</param>
+        protected void RefreshUI(bool force = false)
+        {
+            if(_graph == null) return;
+            _graph.RerenderIfDirty(force);
+        }
 
         /// <summary>
         /// 获取当前UI上绑定的所有Model

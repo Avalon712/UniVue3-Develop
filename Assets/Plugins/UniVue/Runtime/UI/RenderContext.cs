@@ -116,7 +116,7 @@ namespace UniVue.UI
         private void Render(RenderGraph graph, HashSet<string> propertyNames, BaseModel model,
                             HashSet<RenderGraph.Node> recordHadRenderedNodes)
         {
-            if (!graph.Enable) return;
+            if(!graph.Enable && graph.Dirty) return;
             if (!graph.EventOrModelNodes.TryGetValue(model, out RenderGraph.Node modelNode)) return;
 
             using InternalTempCollection<HashSet<RenderGraph.Node>, RenderGraph.Node> renderNodes = new(null);
@@ -134,6 +134,11 @@ namespace UniVue.UI
             foreach (RenderGraph.Node renderNode in renderNodes)
             {
                 if (renderNode.RenderFunc == null || recordHadRenderedNodes.Contains(renderNode)) continue;
+                if (!graph.Enable)
+                {
+                    graph.Dirty = true;
+                    return;
+                }
                 renderNode.RenderFunc.Invoke();
                 recordHadRenderedNodes.Add(renderNode);
             }
@@ -141,7 +146,7 @@ namespace UniVue.UI
 
         private void Render(RenderGraph graph, in EventKey eventKey, HashSet<RenderGraph.Node> recordHadRenderedNodes)
         {
-            if (!graph.Enable) return;
+            if(!graph.Enable && graph.Dirty) return; 
             if (!graph.EventOrModelNodes.TryGetValue(eventKey, out RenderGraph.Node eventNode)) return;
 
             using InternalTempCollection<HashSet<RenderGraph.Node>, RenderGraph.Node> renderNodes = new(null);
@@ -153,6 +158,11 @@ namespace UniVue.UI
             foreach (RenderGraph.Node renderNode in renderNodes)
             {
                 if (renderNode.RenderFunc == null || recordHadRenderedNodes.Contains(renderNode)) continue;
+                if (!graph.Enable)
+                {
+                    graph.Dirty = true;
+                    return;
+                }
                 renderNode.RenderFunc.Invoke();
                 recordHadRenderedNodes.Add(renderNode);
             }

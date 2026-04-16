@@ -53,6 +53,8 @@ namespace UniVue.UI
 
         internal bool Enable { get; set; }
 
+        internal bool Dirty { get; set; }
+        
         /// <summary>
         /// 收集所有类型为collectType的节点，如果collectType为NodeType.None，则收集所有节点
         /// </summary>
@@ -109,6 +111,21 @@ namespace UniVue.UI
                     ClearRecycledNodeReference(kv.Value);
         }
 
+        public void RerenderIfDirty(bool force)
+        {
+            if ((Dirty || force) && Enable)
+            {
+                using InternalTempCollection<HashSet<Node>, Node> nodes = new(null);
+                CollectAllNode(Root, NodeType.Render, nodes);
+                foreach (Node node in nodes)
+                {
+                    if (!node.Recycled && node.RenderFunc != null)
+                        node.RenderFunc.Invoke();
+                }
+                Dirty = false;
+            }
+        }
+        
         public void Remove(Action renderFunc)
         {
             if (renderFunc == null) return;

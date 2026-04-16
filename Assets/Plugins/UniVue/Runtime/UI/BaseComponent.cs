@@ -32,7 +32,7 @@ namespace UniVue.UI
         {
             if (Status) return;
             CheckDisposedAndInitialized();
-            RenderEnabled = true;
+            RenderStatus = true;
             UI.SetActive(true);
             Status = true;
             OnShow();
@@ -42,7 +42,7 @@ namespace UniVue.UI
         {
             if (!Status) return;
             CheckDisposedAndInitialized();
-            RenderEnabled = false;
+            RenderStatus = false;
             UI.SetActive(false);
             Status = false;
             OnHide();

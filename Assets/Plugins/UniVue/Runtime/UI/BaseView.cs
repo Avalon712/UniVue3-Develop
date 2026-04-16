@@ -205,7 +205,7 @@ namespace UniVue.UI
         internal void OnOpenInternal(object[] args)
         {
             if (Status || Disposed) return;
-            RenderEnabled = true;
+            RenderStatus = true;
             Args = args;
             Status = true;
             //恢复创建时的状态
@@ -226,7 +226,7 @@ namespace UniVue.UI
         internal void OnCloseInternal()
         {
             if (!Status || Disposed) return;
-            RenderEnabled = false;
+            RenderStatus = false;
             Status = false;
             KillAllCoroutines();
             KillAllTimers();
