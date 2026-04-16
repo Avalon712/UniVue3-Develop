@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UniVue.UI;
 
 namespace UniVue.UI.Widegts
 {

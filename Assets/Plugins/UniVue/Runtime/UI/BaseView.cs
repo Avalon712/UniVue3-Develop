@@ -127,7 +127,7 @@ namespace UniVue.UI
                     GameObjectUtils.RectTransformClone(viewPrefab, !mountNode ? UI.transform : mountNode);
                 viewObj.name = viewPrefab.name;
                 BaseView childView = viewObj.GetComponent<BaseView>();
-                if(!childView)
+                if (!childView)
                     viewObj.AddComponent<BaseView>();
                 childView.Parent = this;
                 childView.ViewName = viewObj.name;
@@ -168,14 +168,14 @@ namespace UniVue.UI
                 BaseComponent component = uiObj.GetComponent<T>();
                 if (!component)
                     component = uiObj.AddComponent<T>();
-                
+
                 _viewUIs.Add(component);
                 component.View = this;
                 component.OnCreateInternal(uiObj);
                 component.Show();
             });
         }
-        
+
         public void CloseChildView(string viewName)
         {
             CheckDisposedAndInitialized();

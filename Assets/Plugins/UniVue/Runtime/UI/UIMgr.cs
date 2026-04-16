@@ -21,7 +21,7 @@ namespace UniVue.UI
         private static IUILayerMgr LayerMgr { get; set; }
 
         public static RenderContext Renderer { get; private set; }
-        
+
         public static RedPointMgr RedPointMgr { get; private set; }
 
         /// <summary>
@@ -178,7 +178,7 @@ namespace UniVue.UI
 
                 GameObject viewObj = GameObjectUtils.RectTransformClone(viewPrefab, LayerMgr.HideLayer.transform);
                 BaseView newView = viewObj.GetComponent<T>();
-                if(!newView)
+                if (!newView)
                     newView = viewObj.AddComponent<T>();
                 newView.transform.SetParent(LayerMgr.GetLayerRoot(newView.Layer).transform);
                 _openedViews[viewName] = newView;

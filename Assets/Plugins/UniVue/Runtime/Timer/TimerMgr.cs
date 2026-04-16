@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using UniVue.Coroutine;
 using UnityEngine;
 using UniVue.Common;
+using UniVue.Coroutine;
 using UniVue.Internal;
 
 namespace UniVue.Timer

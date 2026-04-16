@@ -32,7 +32,7 @@ namespace UniVue.Internal
                 foreach (TItem item in collection)
                     Collection.Add(item);
         }
-        
+
         public static implicit operator TCollection(InternalTempCollection<TCollection, TItem> collection)
         {
             return collection.Collection;

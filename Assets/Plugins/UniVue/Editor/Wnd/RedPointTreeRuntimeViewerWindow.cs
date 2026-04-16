@@ -133,13 +133,13 @@ namespace UniVue.Editor
 
             // 使用完整重载指定滚动条与背景样式，避免与 (scroll, bool, bool, ...) 等重载产生歧义
             _leftScroll = EditorGUILayout.BeginScrollView(
-                _leftScroll,
-                false,
-                false,
-                GUI.skin.horizontalScrollbar,
-                GUI.skin.verticalScrollbar,
-                _leftScrollStyle,
-                GUILayout.ExpandHeight(true));
+                                                          _leftScroll,
+                                                          false,
+                                                          false,
+                                                          GUI.skin.horizontalScrollbar,
+                                                          GUI.skin.verticalScrollbar,
+                                                          _leftScrollStyle,
+                                                          GUILayout.ExpandHeight(true));
 
             List<KeyValuePair<ulong, RedPointMgr.RedPointNode>> roots =
                 trees.Where(kv => kv.Value != null).OrderBy(kv => kv.Key).ToList();
@@ -175,13 +175,11 @@ namespace UniVue.Editor
             }
 
             if (UnityEngine.Event.current.type == EventType.MouseMove)
-            {
                 if (newHover != _leftListHoverIndex)
                 {
                     _leftListHoverIndex = newHover;
                     Repaint();
                 }
-            }
 
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();

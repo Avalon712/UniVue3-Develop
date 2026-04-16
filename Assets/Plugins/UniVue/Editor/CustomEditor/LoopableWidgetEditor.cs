@@ -3,7 +3,6 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
-using UniVue.Editor;
 using UniVue.UI.Widegts;
 
 namespace UniVue.Editor

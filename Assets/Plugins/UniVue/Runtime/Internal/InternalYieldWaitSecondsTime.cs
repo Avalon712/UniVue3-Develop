@@ -1,6 +1,6 @@
 ﻿using System;
-using UniVue.Coroutine;
 using UnityEngine;
+using UniVue.Coroutine;
 
 namespace UniVue.Internal
 {

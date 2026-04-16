@@ -103,12 +103,10 @@ namespace UniVue.UI
                 new(node.next);
 
             foreach (KeyValuePair<object, Node> kv in tempNodes)
-            {
                 if (kv.Value.Recycled)
                     node.next.Remove(kv.Key);
                 else
                     ClearRecycledNodeReference(kv.Value);
-            }
         }
 
         public void Remove(Action renderFunc)

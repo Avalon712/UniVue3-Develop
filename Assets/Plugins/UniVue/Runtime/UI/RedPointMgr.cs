@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Framwork.Utils;
-using UniVue.Coroutine;
 using UniVue.Common;
+using UniVue.Coroutine;
 
 namespace UniVue.UI
 {
@@ -11,13 +11,15 @@ namespace UniVue.UI
     {
         public const uint RootMaxCount = ushort.MaxValue;
         public const uint NotRootMaxCount = byte.MaxValue - 1;
-        
+
         private readonly Dictionary<ulong, RedPointNode> _allNodes = new(128);
         private readonly HashSet<ulong> _dirtyTrees = new(16);
+
         /// <summary>
         /// 动态创建的红点树，只存根节点的key
         /// </summary>
         private readonly HashSet<ulong> _dynamicRoots = new(128);
+
         private readonly Dictionary<ulong, Action<bool>> _listeners = new(128);
         private readonly Dictionary<ulong, bool> _recordForceStaus = new(32); //不根据内置激活规则设置的状态
 
@@ -26,7 +28,9 @@ namespace UniVue.UI
         /// </summary>
         private readonly Dictionary<ulong, RedPointNode> _trees = new();
 
-        public RedPointMgr() { }
+        public RedPointMgr()
+        {
+        }
 
         public RedPointMgr(Type redPointKeyType)
         {
@@ -203,10 +207,7 @@ namespace UniVue.UI
         {
             ExceptionUtils.ThrowIfArgNull(childrenKeys, nameof(childrenKeys));
             if (!_allNodes.TryGetValue(key, out RedPointNode node)) return;
-            foreach (RedPointNode child in node.children)
-            {
-                childrenKeys.Add(child.key);
-            }
+            foreach (RedPointNode child in node.children) childrenKeys.Add(child.key);
         }
 
         public bool HaveChildren(ulong key)
@@ -226,14 +227,12 @@ namespace UniVue.UI
             ushort maxRootVal = 0;
             bool isFound = false;
             for (uint i = 0; i <= RootMaxCount; i++)
-            {
                 if (!_allNodes.ContainsKey(i))
                 {
                     maxRootVal = (ushort)i;
                     isFound = true;
                     break;
                 }
-            }
 
             if (!isFound)
             {

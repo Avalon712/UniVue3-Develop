@@ -234,6 +234,7 @@ namespace UniVue.UI
                 propertyNames.Clear();
                 InternalObjectPool<HashSet<string>>.Shared.Return(propertyNames);
             }
+
             InternalObjectPool<HashSet<RenderGraph>>.Shared.Return(graphs);
             model.OnPropertyChanged -= NotifyPropertyChanged;
         }

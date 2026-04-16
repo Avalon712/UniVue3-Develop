@@ -47,7 +47,7 @@ namespace UniVue.UI
             Status = false;
             OnHide();
         }
-        
+
 
 #region 子类重写
 
