@@ -229,6 +229,11 @@ namespace UniVue.UI
             foreach (RenderGraph graph in graphs)
                 graph.Remove(model);
             graphs.Clear();
+            if (_needRerenderProperties.Remove(model, out HashSet<string> propertyNames))
+            {
+                propertyNames.Clear();
+                InternalObjectPool<HashSet<string>>.Shared.Return(propertyNames);
+            }
             InternalObjectPool<HashSet<RenderGraph>>.Shared.Return(graphs);
             model.OnPropertyChanged -= NotifyPropertyChanged;
         }

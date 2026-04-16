@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using UnityEngine;
-using UniVue.Common;
 using UniVue.Event;
 using UniVue.Model;
 using UniVue.UI;
@@ -39,21 +38,22 @@ namespace Game
             //    .On(_data)
             //    .Build();
 
-            Bind(() => { Debug.Log($"Data Changed Rerender:  Value = {_data.Value} Name = {_data.Name}"); });
+            // Bind(() => { Debug.Log($"Data Changed Rerender:  Value = {_data.Value} Name = {_data.Name}"); });
             Bind(Test);
-            Bind(true, () => Test2(_data));
-            Bind(() =>
-                     Debug.Log($"A1 = {_data.A1} A2 = {_data.A2} A3 = {_data.A3} A4 = {_data.A4} A5 = {_data.A5} A6 = {_data.A6} A7 = {_data.A7} A8 = {_data.A8} A9 = {_data.A9} A10 = {_data.A10}"));
-            Bind(() =>
-                     Debug.Log($"Value = {_data.Name} A1 = {_data.A1} A2 = {_data.A2} A3 = {_data.A3} A4 = {_data.A4} A5 = {_data.A5} A6 = {_data.A6} A7 = {_data.A7} A8 = {_data.A8} A9 = {_data.A9} A10 = {_data.A10}"));
+            // Bind(true, () => Test2(_data));
+            // Bind(() =>
+            //          Debug.Log($"A1 = {_data.A1} A2 = {_data.A2} A3 = {_data.A3} A4 = {_data.A4} A5 = {_data.A5} A6 = {_data.A6} A7 = {_data.A7} A8 = {_data.A8} A9 = {_data.A9} A10 = {_data.A10}"));
+            // Bind(() =>
+            //          Debug.Log($"Value = {_data.Name} A1 = {_data.A1} A2 = {_data.A2} A3 = {_data.A3} A4 = {_data.A4} A5 = {_data.A5} A6 = {_data.A6} A7 = {_data.A7} A8 = {_data.A8} A9 = {_data.A9} A10 = {_data.A10}"));
             // Bind(false, () => print("test")); //警告
 
-            Bind(1, () => Debug.Log($"事件{UIMgr.Renderer.CurrentTriggerRenderEvent}触发渲染函数调用"));
-            Bind(() => print($"事件{UIMgr.Renderer.CurrentTriggerRenderEvent}触发渲染函数调用"), 2, 3, 4, 5);
+            // Bind(1, () => Debug.Log($"事件{UIMgr.Renderer.CurrentTriggerRenderEvent}触发渲染函数调用"));
+            // Bind(() => print($"事件{UIMgr.Renderer.CurrentTriggerRenderEvent}触发渲染函数调用"), 2, 3, 4, 5);
 
-            Unbind(1);
-            Unbind(2, 3, 4);
-            Unbind(Params<EventKey>._(1, new EventKey(2), 3, 4));
+            // Unbind(1);
+            // Unbind(2, 3, 4);
+            // Unbind(Params<EventKey>._(1, new EventKey(2), 3, 4));
+            // Unbind(Test);
 
             // Unbind(_data, nameof(_data.Name), nameof(_data.Value));
             // Unbind(_data, "Name", "Value", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10");
@@ -88,12 +88,16 @@ namespace Game
             yield return new WaitForSeconds(1);
             _data.Name = "Test";
             _data.A1 = 10;
+            _data.Value = 12;
             yield return new WaitForSeconds(1);
             EventMgr.Dispatch(1);
             yield return new WaitForSeconds(1);
             EventMgr.Dispatch(2);
             yield return new WaitForSeconds(1);
             EventMgr.Dispatch(5);
+
+            // UIMgr.Close<TestView>();
+            _data.Value = 9999;
         }
 
         private IEnumerator EventTest()

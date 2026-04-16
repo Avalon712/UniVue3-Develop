@@ -10,7 +10,7 @@ namespace UniVue.Coroutine
         protected override bool HandleYield(CoroutineMgr.CoroutineRecorder recorder)
         {
             WaitWhile waitWhile = (WaitWhile)recorder.Yield;
-            return waitWhile.keepWaiting;
+            return !waitWhile.keepWaiting;
         }
     }
 }

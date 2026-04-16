@@ -20,10 +20,13 @@ namespace UniVue.Timer
         {
             while (true)
             {
-                if (_timerTasks.Count <= 0) continue;
-                _waitTime += Time.deltaTime;
-                if (_waitTime >= _timerHeap.Top())
-                    UpdateWaitTime();
+                if (_timerTasks.Count > 0)
+                {
+                    _waitTime += Time.deltaTime;
+                    if (_waitTime >= _timerHeap.Top())
+                        UpdateWaitTime();
+                }
+
                 yield return null;
             }
         }
@@ -78,7 +81,6 @@ namespace UniVue.Timer
         {
             if (!_timerTasks.Remove(timerId, out TimerTask timerTask))
                 return;
-            InternalObjectPool<TimerTask>.Shared.Return(timerTask);
             timerTask.repeatCount = 0;
             timerTask.callback = null;
             timerTask.executeCondition = null;
@@ -86,6 +88,7 @@ namespace UniVue.Timer
             timerTask.surplusWaitTime = 0f;
             timerTask.delay = 0f;
             timerTask.interval = 0f;
+            InternalObjectPool<TimerTask>.Shared.Return(timerTask);
         }
 
         public static TimerBuilder Create()

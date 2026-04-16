@@ -37,7 +37,7 @@ namespace UniVue.Event
 
         public static implicit operator EventKey(Enum enumKey)
         {
-            return new EventKey(Enum.GetName(enumKey.GetType(), enumKey));
+            return new EventKey(Convert.ToInt32(enumKey));
         }
 
         public static implicit operator EventKey(string stringKey)
