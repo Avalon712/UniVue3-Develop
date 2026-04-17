@@ -7,7 +7,7 @@ using Unity.CompilationPipeline.Common.Diagnostics;
 
 namespace UniVue.CodeGen
 {
-    public static class UIInjector
+    internal static class UIInjector
     {
         private const string BaseUIFullName = "UniVue.UI.BaseUI";
         private const string BaseModelFullName = "UniVue.Model.BaseModel";
@@ -21,8 +21,8 @@ namespace UniVue.CodeGen
 
             bool modified = false;
             foreach (ModuleDefinition module in assemblyDefinition.Modules)
-            foreach (TypeDefinition type in module.Types)
-                modified |= InjectType(module, type, diagnostics);
+                foreach (TypeDefinition type in module.Types)
+                    modified |= InjectType(module, type, diagnostics);
             return modified;
         }
 

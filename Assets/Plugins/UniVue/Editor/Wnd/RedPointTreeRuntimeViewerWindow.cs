@@ -102,7 +102,7 @@ namespace UniVue.Editor
             return field?.GetValue(mgr) as IReadOnlyDictionary<ulong, RedPointMgr.RedPointNode>;
         }
 
-        [MenuItem("UniVue/Windows/RedPointTreeViewer")]
+        [MenuItem("UniVue/Windows/RedPointTreeDebugger (Runtime)")]
         private static void ShowWindow()
         {
             if (!EditorApplication.isPlaying)

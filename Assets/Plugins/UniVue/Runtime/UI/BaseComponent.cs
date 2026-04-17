@@ -8,31 +8,15 @@ namespace UniVue.UI
         public BaseView View { get; internal set; }
 
         /// <summary>
-        /// 组件名称，即gameObject.name
-        /// </summary>
-        public string Name { get; internal set; }
-
-        /// <summary>
         /// 状态
         /// </summary>
         public bool Status { get; private set; }
-
-        protected sealed override void OnCreate()
-        {
-            OnInit();
-        }
-
-        protected sealed override void OnDispose()
-        {
-            View = null;
-            OnKill();
-        }
 
         public void Show()
         {
             if (Status) return;
             CheckDisposedAndInitialized();
-            RenderStatus = true;
+            Enable = true;
             UI.SetActive(true);
             Status = true;
             OnShow();
@@ -42,18 +26,15 @@ namespace UniVue.UI
         {
             if (!Status) return;
             CheckDisposedAndInitialized();
-            RenderStatus = false;
+            Enable = false;
             UI.SetActive(false);
             Status = false;
             OnHide();
         }
 
 
-#region 子类重写
+        #region 子类重写
 
-        protected virtual void OnInit()
-        {
-        }
 
         protected virtual void OnShow()
         {
@@ -63,10 +44,6 @@ namespace UniVue.UI
         {
         }
 
-        protected virtual void OnKill()
-        {
-        }
-
-#endregion
+        #endregion
     }
 }

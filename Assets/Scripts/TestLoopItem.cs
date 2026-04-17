@@ -1,9 +1,9 @@
-using TMPro;
+﻿using TMPro;
 using UniVue.UI.Widegts;
 
 namespace Game
 {
-    public class TestLoopItem : LoopItem
+    public partial class TestLoopItem : LoopItem
     {
         public TMP_Text text;
 

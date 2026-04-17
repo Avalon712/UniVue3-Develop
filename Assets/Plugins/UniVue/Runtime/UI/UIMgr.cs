@@ -13,7 +13,7 @@ namespace UniVue.UI
         private static bool _initialized;
         private static readonly Dictionary<string, BaseView> _closedViews = new(16);
         private static readonly List<string> _disposeQueue = new(16);
-        private static readonly Dictionary<string, Action> _loadingViews = new(16);
+        private static readonly Dictionary<string, Action<bool>> _loadingViews = new(16);
         private static readonly Dictionary<string, BaseView> _openedViews = new(16);
 
         internal static IUIPrefabLoader Loader { get; private set; }
@@ -95,8 +95,9 @@ namespace UniVue.UI
                              _disposeQueue.RemoveAt(0);
                              if (_closedViews.Remove(viewName, out BaseView view) && view != null)
                              {
+                                 GameObject ui = view.UI;
                                  view.OnDisposeInternal();
-                                 Object.Destroy(view.UI);
+                                 Object.Destroy(ui);
                              }
                          }
                      })
@@ -125,15 +126,15 @@ namespace UniVue.UI
         /// <summary>
         /// 打开指定类型和名称的界面
         /// </summary>
-        /// <param name="callback">界面打开完成后回调</param>
+        /// <param name="callback">界面打开完成后回调，参数true-界面打开成功，false-界面打开失败</param>
         /// <param name="args">界面传递参数（如果界面在加载还没有完成时中又被执行了一次Open，此时此参数无效）</param>
         /// <typeparam name="T">界面类型（如果GameObject身上没有添加此组件则会自动添加此组件）</typeparam>
-        public static void Open<T>(Action callback = null, params object[] args) where T : BaseView
+        public static void Open<T>(Action<bool> callback = null, params object[] args) where T : BaseView
         {
             Type viewType = typeof(T);
             string viewName = viewType.Name;
 
-            if (_loadingViews.TryGetValue(viewName, out Action callbacks))
+            if (_loadingViews.TryGetValue(viewName, out Action<bool> callbacks))
             {
                 if (callback != null)
                     _loadingViews[viewName] += callback;
@@ -142,7 +143,7 @@ namespace UniVue.UI
 
             if (_openedViews.ContainsKey(viewName))
             {
-                callback?.Invoke();
+                callback?.Invoke(false);
                 return;
             }
 
@@ -153,7 +154,7 @@ namespace UniVue.UI
 
                 view.UI.transform.SetParent(LayerMgr.GetLayerRoot(view.Layer).transform);
                 view.OnOpenInternal(args);
-                callback?.Invoke();
+                callback?.Invoke(true);
                 return;
             }
 
@@ -164,13 +165,15 @@ namespace UniVue.UI
                 //界面没有加载完成就关闭了界面
                 if (_closedViews.Remove(viewName))
                 {
-                    _loadingViews.Remove(viewName);
+                    if (_loadingViews.Remove(viewName, out Action<bool> callbacks))
+                        callbacks?.Invoke(false);
                     return;
                 }
 
                 if (viewPrefab == null)
                 {
-                    _loadingViews.Remove(viewName);
+                    if (_loadingViews.Remove(viewName, out Action<bool> callbacks))
+                        callbacks?.Invoke(false);
                     _openedViews.Remove(viewName);
                     LogUtil.Exception(new Exception($"加载UI预制体失败，界面类型：{viewName}"));
                     return;
@@ -185,7 +188,7 @@ namespace UniVue.UI
                 viewObj.name = viewName;
                 newView.OnCreateInternal(viewObj);
                 newView.OnOpenInternal(args);
-                if (_loadingViews.Remove(viewName, out callbacks)) callbacks?.Invoke();
+                if (_loadingViews.Remove(viewName, out callbacks)) callbacks?.Invoke(true);
             });
         }
 
@@ -203,6 +206,16 @@ namespace UniVue.UI
             }
         }
 
+        public static void CreateUI<T>(Action<bool> callback = null)
+        {
+            
+        }
+
+        public static void DestroyUI() 
+        {
+            
+        }
+        
         public static void Close<T>() where T : BaseView
         {
             Close(typeof(T).Name);

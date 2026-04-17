@@ -6,7 +6,7 @@ using Unity.CompilationPipeline.Common.Diagnostics;
 
 namespace UniVue.CodeGen
 {
-    public static class ParamsGCOptimizationInjector
+    internal static class ParamsGCOptimizationInjector
     {
         private const string OptimizationAttributeFullName = "UniVue.Internal.InternalParamsGCOptimizationAttribute";
         private const string ParamsTypeFullNamePrefix = "UniVue.Common.Params`1";
@@ -17,8 +17,8 @@ namespace UniVue.CodeGen
 
             bool modified = false;
             foreach (ModuleDefinition module in assemblyDefinition.Modules)
-            foreach (TypeDefinition type in module.Types)
-                modified |= InjectType(module, type, diagnostics);
+                foreach (TypeDefinition type in module.Types)
+                    modified |= InjectType(module, type, diagnostics);
 
             return modified;
         }

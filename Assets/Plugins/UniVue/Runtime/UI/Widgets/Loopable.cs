@@ -16,6 +16,7 @@ namespace UniVue.UI.Widegts
         Vertical
     }
 
+    [DontGenUICode(Code = UIGenCode.Property)]
     public abstract class LoopItem : BaseComponent
     {
         internal void Render(int index)
@@ -143,7 +144,7 @@ namespace UniVue.UI.Widegts
             }
         }
 
-        protected sealed override void OnKill()
+        protected sealed override void OnDispose()
         {
             _scrollRect.onValueChanged.RemoveListener(OnScroll);
             Scrollbar?.onValueChanged.RemoveListener(OnScroll);

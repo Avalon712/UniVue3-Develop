@@ -57,14 +57,16 @@ namespace UniVue.Editor
         private bool _showComment;
 
         private List<RedPointTree> _trees = new();
-        private static string PrefsKeyDirectory => Application.dataPath + "/RedPointTreeWindow.Directory";
-        private static string PrefsKeyNamespace => Application.dataPath + "/RedPointTreeWindow.Namespace";
+        // private static string PrefsKeyDirectory => Application.dataPath + "/RedPointTreeWindow.Directory";
+        // private static string PrefsKeyNamespace => Application.dataPath + "/RedPointTreeWindow.Namespace";
 
+        private static UniVueEditorSettings settings => UniVueEditorSettings.instance;
+        
         private void OnEnable()
         {
             _trees ??= new List<RedPointTree>();
-            _directoryPath = EditorPrefs.GetString(PrefsKeyDirectory, "");
-            _namespace = EditorPrefs.GetString(PrefsKeyNamespace, "UniVue");
+            _directoryPath = settings.redPointKeyExportDirectory;
+            _namespace = settings.redPointKeyNamespace;
             _isDirty = false;
             _modifiedSinceLastExport = true;
             TryImportRedPointKeys();
@@ -75,6 +77,7 @@ namespace UniVue.Editor
             if (_isDirty && _modifiedSinceLastExport)
                 ExportRedPointKeys(true);
             _window = null;
+            AssetDatabase.SaveAssetIfDirty(settings);
         }
 
         private void OnGUI()
@@ -120,7 +123,7 @@ namespace UniVue.Editor
             EditorGUILayout.LabelField(bottomText, EditorStyles.miniLabel);
         }
 
-        [MenuItem("UniVue/Windows/RedPointTreeEditor")]
+        [MenuItem("UniVue/Windows/RedPointTreeEditor (Editor)")]
         public static void ShowWindow()
         {
             if (EditorApplication.isPlaying)
@@ -129,7 +132,7 @@ namespace UniVue.Editor
                 return;
             }
 
-            if (_window == null)
+            if (!_window)
                 _window = GetWindow<RedPointTreeWindow>("红点树编辑器");
             _window.Show();
         }
@@ -198,7 +201,7 @@ namespace UniVue.Editor
 
         private static string FindRedPointKeyFilePathStatic()
         {
-            string dir = EditorPrefs.GetString(PrefsKeyDirectory, "");
+            string dir = settings.redPointKeyExportDirectory;
             if (string.IsNullOrEmpty(dir))
                 dir = Path.Combine(Application.dataPath, "Scripts");
             string path = Path.Combine(dir, "RedPointKey.g.cs");
@@ -218,12 +221,12 @@ namespace UniVue.Editor
 
         private void SaveDirectory()
         {
-            EditorPrefs.SetString(PrefsKeyDirectory, _directoryPath);
+            settings.redPointKeyExportDirectory = _directoryPath;
         }
 
         private void SaveNamespace()
         {
-            EditorPrefs.SetString(PrefsKeyNamespace, _namespace);
+            settings.redPointKeyNamespace = _namespace;
         }
 
         /// <summary>

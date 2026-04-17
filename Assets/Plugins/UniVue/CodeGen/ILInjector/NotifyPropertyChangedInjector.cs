@@ -5,7 +5,7 @@ using Mono.Cecil.Cil;
 
 namespace UniVue.CodeGen
 {
-    public static class NotifyPropertyChangedInjector
+    internal static class NotifyPropertyChangedInjector
     {
         private const string BaseModelFullName = "UniVue.Model.BaseModel";
 
@@ -15,8 +15,8 @@ namespace UniVue.CodeGen
             if (assemblyDefinition == null) return false;
 
             foreach (ModuleDefinition module in assemblyDefinition.Modules)
-            foreach (TypeDefinition type in module.Types)
-                modified |= InjectType(module, type);
+                foreach (TypeDefinition type in module.Types)
+                    modified |= InjectType(module, type);
 
             return modified;
         }

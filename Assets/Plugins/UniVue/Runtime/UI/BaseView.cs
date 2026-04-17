@@ -200,12 +200,12 @@ namespace UniVue.UI
                 OnCloseInternal();
         }
 
-#region 内部初始化、生命周期回调
+        #region 内部初始化、生命周期回调
 
         internal void OnOpenInternal(object[] args)
         {
             if (Status || Disposed) return;
-            RenderStatus = true;
+            Enable = true;
             Args = args;
             Status = true;
             //恢复创建时的状态
@@ -226,7 +226,7 @@ namespace UniVue.UI
         internal void OnCloseInternal()
         {
             if (!Status || Disposed) return;
-            RenderStatus = false;
+            Enable = false;
             Status = false;
             KillAllCoroutines();
             KillAllTimers();
@@ -236,9 +236,9 @@ namespace UniVue.UI
             OnClose();
         }
 
-#endregion
+        #endregion
 
-#region 生命周期
+        #region 生命周期
 
         protected sealed override void OnCreate()
         {
@@ -249,7 +249,6 @@ namespace UniVue.UI
 
             //对所有的Component和ChildView执行初始化
             DoCreateInitialization(UI.transform);
-            OnInit();
         }
 
         private void DoCreateInitialization(Transform parent)
@@ -282,9 +281,13 @@ namespace UniVue.UI
 
         protected sealed override void OnDispose()
         {
-            foreach (BaseUI ui in _viewUIs) ui.OnDisposeInternal();
+            foreach (BaseUI ui in _viewUIs)
+            {
+                ui.OnDisposeInternal();
+                if (ui is BaseComponent component) component.View = null;
+            }
 
-            OnKill();
+            OnRelease();
 
             _recordCreateStatus.Clear();
             _viewUIs.Clear();
@@ -292,13 +295,9 @@ namespace UniVue.UI
             InternalObjectPool<Dictionary<BaseUI, bool>>.Shared.Return(_recordCreateStatus);
         }
 
-#endregion
+        #endregion
 
-#region 暴露给子类的生命周期
-
-        protected virtual void OnInit()
-        {
-        }
+        #region 暴露给子类的生命周期
 
         protected virtual void OnOpen()
         {
@@ -310,10 +309,10 @@ namespace UniVue.UI
             UI.SetActive(false);
         }
 
-        protected virtual void OnKill()
+        protected virtual void OnRelease()
         {
         }
 
-#endregion
+        #endregion
     }
 }

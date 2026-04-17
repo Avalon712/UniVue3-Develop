@@ -29,17 +29,26 @@ namespace UniVue.UI
         private RenderGraph _graph;
         private float _timer;
         private List<ulong> _timers;
+        private CoroutineID _updateCoroutine;
 
         public bool Disposed { get; private set; }
 
         public GameObject UI { get; private set; }
 
-        public bool RenderStatus
+        private bool _enable;
+        protected bool Enable
         {
-            get => !Disposed && (_graph == null || _graph.Enable);
-            internal set
+            get => !Disposed && _enable;
+            set
             {
-                if (Disposed || _graph == null || _graph.Enable == value) return;
+                if (Disposed) return;
+                if (_enable == value) return;
+                _enable = value;
+                if (value)
+                    CoroutineMgr.Resume(_updateCoroutine);
+                else
+                    CoroutineMgr.Stop(_updateCoroutine);
+                if (_graph == null || _graph.Enable == value) return;
                 _graph.Enable = value;
                 if (value)
                     RefreshUI();
@@ -53,7 +62,9 @@ namespace UniVue.UI
             _timers = InternalObjectPool<List<ulong>>.Shared.Rent();
             UI = ui;
             OnCreate();
-            if (_enableUpdate | _enableUpdatePerSecond) RunCoroutine(UpdateInternal());
+            OnInit();
+            if (_enableUpdate | _enableUpdatePerSecond)
+                _updateCoroutine = CoroutineMgr.Run(UpdateInternal());
         }
 
         internal void OnDisposeInternal()
@@ -67,6 +78,8 @@ namespace UniVue.UI
             EventMgr.Off(this);
             UI = null;
             Disposed = true;
+            CoroutineMgr.Kill(_updateCoroutine);
+            _updateCoroutine = 0;
             InternalObjectPool<List<ulong>>.Shared.Return(_coroutines);
             InternalObjectPool<List<ulong>>.Shared.Return(_timers);
         }
@@ -83,12 +96,10 @@ namespace UniVue.UI
         {
             while (true)
             {
+                yield return null;
                 float deltaTime = Time.deltaTime;
                 if (_enableUpdate)
-                {
-                    yield return null;
                     OnUpdate(deltaTime);
-                }
 
                 if (_enableUpdatePerSecond)
                 {
@@ -102,16 +113,16 @@ namespace UniVue.UI
             }
         }
 
-#region 辅助函数
+        #region 辅助函数
 
         /// <summary>
         /// 刷新UI（绑定的所有渲染函数都会被执行一次，当渲染状态从Disable变为Enable时会自动调用一次此函数）
         /// <remarks>绝大多数情况下你都无需手动调用此函数。此函数不是精准式的更新，只要有脏标记则会将此UI绑定的所有渲染函数都执行一遍</remarks>
         /// </summary>
-        /// <param name="force">是否强制刷新，即不管有无变化都重新渲染一遍（默认情况只有在当前UI的渲染状态处于Disable期间有渲染状态的变化时才会真正调用）</param>
+        /// <param name="force">是否强制刷新，即不管有无脏标记都重新渲染一遍（默认情况只有在当前UI的渲染状态处于Disable期间有渲染状态的变化时才会真正调用）</param>
         protected void RefreshUI(bool force = false)
         {
-            if(_graph == null) return;
+            if (_graph == null) return;
             _graph.RerenderIfDirty(force);
         }
 
@@ -471,11 +482,15 @@ namespace UniVue.UI
             return parent.gameObject;
         }
 
-#endregion
+        #endregion
 
-#region 生命周期
+        #region 生命周期
 
         protected virtual void OnCreate()
+        {
+        }
+
+        protected virtual void OnInit()
         {
         }
 
@@ -491,6 +506,6 @@ namespace UniVue.UI
         {
         }
 
-#endregion
+        #endregion
     }
 }

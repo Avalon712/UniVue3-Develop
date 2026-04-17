@@ -8,7 +8,7 @@ using Unity.CompilationPipeline.Common.ILPostProcessing;
 
 namespace UniVue.CodeGen
 {
-    public sealed class NotifyPropertyChangedILPostProcessor : ILPostProcessor
+    internal sealed class NotifyPropertyChangedILPostProcessor : ILPostProcessor
     {
         private const string UniVueRuntimeAssemblyName = "UniVue.Runtime";
 

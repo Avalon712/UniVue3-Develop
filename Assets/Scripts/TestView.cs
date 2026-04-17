@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UniVue.Event;
 using UniVue.Model;
@@ -8,7 +9,7 @@ using Debug = UnityEngine.Debug;
 
 namespace Game
 {
-    public class TestView : BaseView
+    public partial class TestView : BaseView
     {
         public LoopList loopListV;
         public LoopList loopListH;
@@ -81,6 +82,8 @@ namespace Game
                 loopGridH.Count = 100;
 
             RunCoroutine(TestRender());
+            
+            // Debug.Log(ScrollList_Horizontal);
         }
 
         private IEnumerator TestRender()
@@ -159,4 +162,29 @@ namespace Game
             public int A10 { get; set; }
         }
     }
+
+    public partial class TestView
+    {
+        public void Test3()
+        {
+            Debug.Log($"{nameof(Test3)}");
+        }
+    }
 }
+
+#region UniVue Auto-Generated — DO NOT MODIFY
+namespace Game
+{
+    partial class TestView
+    {
+        private UnityEngine.UI.Image _Image;
+        public UnityEngine.UI.Image Image => _Image ? _Image : (_Image = FindByPath("TestView/Image").GetComponent<UnityEngine.UI.Image>());
+
+        private UniVue.UI.Widegts.LoopList _ScrollList_Horizontal;
+        public UniVue.UI.Widegts.LoopList ScrollList_Horizontal => _ScrollList_Horizontal ? _ScrollList_Horizontal : (_ScrollList_Horizontal = FindByPath("TestView/ScrollList_Horizontal").GetComponent<UniVue.UI.Widegts.LoopList>());
+
+        private UniVue.UI.Widegts.LoopList _ScrollList_Vertical;
+        public UniVue.UI.Widegts.LoopList ScrollList_Vertical => _ScrollList_Vertical ? _ScrollList_Vertical : (_ScrollList_Vertical = FindByPath("TestView/ScrollList_Vertical").GetComponent<UniVue.UI.Widegts.LoopList>());
+    }
+}
+#endregion // UniVue Auto-Generated
