@@ -10,7 +10,7 @@ namespace UniVue.Event
     public static class EventMgr
     {
         private static readonly Dictionary<EventKey, HashSet<EventCallback>> _callbacks = new(128);
-        private static readonly HashSet<EventKey> _dispatchPaths = new(16);
+        private static readonly List<EventKey> _dispatchPaths = new();
 
         /// <summary>
         /// 当前触发的事件
@@ -22,6 +22,11 @@ namespace UniVue.Event
         /// </summary>
         public static event Action<EventKey> OnEvent;
 
+        /// <summary>
+        /// 当触发死循环链路时回调，参数为事件触发链路
+        /// </summary>
+        public static event Action<IReadOnlyList<EventKey>> OnDeadLoop; 
+        
         private static HashSet<EventCallback> GetCallbacks(in EventKey eventKey, bool createIfNotExist = true)
         {
             if (!_callbacks.TryGetValue(eventKey, out HashSet<EventCallback> callbacks) && createIfNotExist)
@@ -47,6 +52,20 @@ namespace UniVue.Event
             LogUtil.Info($"Event Dispatched: {eventKey}, Callback successfully, Registered At: {callback.trackFrame}");
         }
 
+        private static bool CheckDeadLoop(in EventKey eventKey)
+        {
+            if (_dispatchPaths.Contains(eventKey))
+            {
+                _dispatchPaths.Add(eventKey);
+                LogUtil.Warn($"检查到死循环链路[{string.Join(" => ", _dispatchPaths)}]，事件执行已被强制中断！");
+                OnDeadLoop?.Invoke(_dispatchPaths);
+                _dispatchPaths.RemoveAt(_dispatchPaths.Count - 1);
+                return true;
+            }
+            _dispatchPaths.Add(eventKey);
+            return false;
+        }
+        
         /// <summary>
         /// 监听事件（默认的目标对象为委托的Target对象）
         /// </summary>
@@ -231,11 +250,8 @@ namespace UniVue.Event
            
             if (callbacks != null)
             {
-                if (!_dispatchPaths.Add(eventKey))
-                {
-                    LogUtil.Warn($"检查到死循环链路[{string.Join(" => ", _dispatchPaths)} => {eventKey}]，事件执行已被强制中断！");
+                if (CheckDeadLoop(eventKey))
                     return;
-                }
                 
                 CurrentTriggeredEvent = eventKey;
                 
@@ -265,11 +281,8 @@ namespace UniVue.Event
             HashSet<EventCallback> callbacks = GetCallbacks(eventKey, false);
             if (callbacks != null)
             {
-                if (!_dispatchPaths.Add(eventKey))
-                {
-                    LogUtil.Warn($"检查到死循环链路[{string.Join(" => ", _dispatchPaths)} => {eventKey}]，事件执行已被强制中断！");
+                if (CheckDeadLoop(eventKey))
                     return;
-                }
                 
                 CurrentTriggeredEvent = eventKey;
                 
