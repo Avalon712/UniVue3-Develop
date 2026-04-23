@@ -143,7 +143,7 @@ namespace UniVue.UI
                     }
 
                     properties.Clear();
-                    InternalObjectPool<HashSet<string>>.Shared.Return(properties); //回收
+                    InternalObjectPool<HashSet<string>>.Shared.Return(ref properties); //回收
                 }
                 else
                 {

@@ -26,13 +26,15 @@ namespace UniVue.Coroutine
             Stop,
             Kill
         }
-        
+
         private static ulong _coroutineId = 1;
         private static VCoroutineRunner _instance;
+
         /// <summary>
         /// 后添加的CoroutineId更大，SortedDictionary按升序遍历，从而保证队列式的执行顺序
         /// </summary>
         private static readonly SortedDictionary<ulong, CoroutineRecorder> _coroutines = new();
+
         private static readonly Dictionary<ulong, CoroutineRecorder> _appendingQueue = new(16);
         private static readonly HashSet<CoroutineRecorder> _disposeQueue = new(16);
 
@@ -70,7 +72,7 @@ namespace UniVue.Coroutine
         private static void RecycleList(List<CoroutineRecorder> list)
         {
             list.Clear();
-            InternalObjectPool<List<CoroutineRecorder>>.Shared.Return(list);
+            InternalObjectPool<List<CoroutineRecorder>>.Shared.Return(ref list);
         }
 
         private static CoroutineRecorder Rent()
@@ -87,7 +89,7 @@ namespace UniVue.Coroutine
             recorder.CoroutineId = 0;
             recorder.dependencies.Clear();
             recorder.CoroutineName = null;
-            InternalObjectPool<CoroutineRecorder>.Shared.Return(recorder);
+            InternalObjectPool<CoroutineRecorder>.Shared.Return(ref recorder);
         }
 
         private static bool HandleYield(CoroutineRecorder recorder)

@@ -119,7 +119,7 @@ namespace UniVue.Event
                 if (callbacks.Count <= 0)
                 {
                     _callbacks.Remove(eventKey);
-                    InternalObjectPool<HashSet<EventCallback>>.Shared.Return(callbacks);
+                    InternalObjectPool<HashSet<EventCallback>>.Shared.Return(ref callbacks);
                 }
             }
         }
@@ -145,7 +145,7 @@ namespace UniVue.Event
                 if (callbacks.Count <= 0)
                 {
                     _callbacks.Remove(eventKey);
-                    InternalObjectPool<HashSet<EventCallback>>.Shared.Return(callbacks);
+                    InternalObjectPool<HashSet<EventCallback>>.Shared.Return(ref callbacks);
                 }
             }
         }
@@ -161,7 +161,7 @@ namespace UniVue.Event
             {
                 _callbacks.Remove(eventKey);
                 callbacks.Clear();
-                InternalObjectPool<HashSet<EventCallback>>.Shared.Return(callbacks);
+                InternalObjectPool<HashSet<EventCallback>>.Shared.Return(ref callbacks);
             }
         }
 
@@ -188,7 +188,7 @@ namespace UniVue.Event
                 if (callbacks.Count <= 0)
                 {
                     _callbacks.Remove(eventKey);
-                    InternalObjectPool<HashSet<EventCallback>>.Shared.Return(callbacks);
+                    InternalObjectPool<HashSet<EventCallback>>.Shared.Return(ref callbacks);
                 }
             }
         }
@@ -210,7 +210,8 @@ namespace UniVue.Event
                 if (kv.Value.Count <= 0)
                 {
                     eventKeys.Add(kv.Key);
-                    InternalObjectPool<HashSet<EventCallback>>.Shared.Return(kv.Value);
+                    HashSet<EventCallback> temp = kv.Value;
+                    InternalObjectPool<HashSet<EventCallback>>.Shared.Return(ref temp);
                 }
             }
 

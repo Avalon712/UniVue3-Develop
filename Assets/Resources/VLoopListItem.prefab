@@ -143,6 +143,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9203937786910193520}
+  - component: {fileID: 3254881027959469330}
   - component: {fileID: 202653448085843043}
   m_Layer: 5
   m_Name: SelectedToggle
@@ -172,6 +173,57 @@ RectTransform:
   m_AnchoredPosition: {x: 20, y: 0}
   m_SizeDelta: {x: 280, y: 60}
   m_Pivot: {x: 0, y: 0.5}
+--- !u!114 &3254881027959469330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5929112874221945572}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 044abe2fd8e14d8bb138297874317f22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _eventName: Test
+  _eventUIType: 4
+  _triggerType: 1
+  _arguments:
+  - type: 1
+    keyName: arg1
+    boolV: 1
+    intV: 0
+    floatV: 0
+    stringV: 
+    vector2V: {x: 0, y: 0}
+  - type: 2
+    keyName: arg2
+    boolV: 0
+    intV: 12
+    floatV: 0
+    stringV: 
+    vector2V: {x: 0, y: 0}
+  - type: 3
+    keyName: arg3
+    boolV: 0
+    intV: 0
+    floatV: 12.8
+    stringV: 
+    vector2V: {x: 0, y: 0}
+  - type: 4
+    keyName: arg4
+    boolV: 0
+    intV: 0
+    floatV: 0
+    stringV: test
+    vector2V: {x: 0, y: 0}
+  - type: 5
+    keyName: arg5
+    boolV: 0
+    intV: 0
+    floatV: 0
+    stringV: 
+    vector2V: {x: 12, y: 8}
 --- !u!114 &202653448085843043
 MonoBehaviour:
   m_ObjectHideFlags: 0

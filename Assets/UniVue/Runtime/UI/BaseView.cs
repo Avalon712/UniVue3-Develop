@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Framwork.Utils;
 using UnityEngine;
@@ -8,6 +7,7 @@ using UniVue.Internal;
 
 namespace UniVue.UI
 {
+    [DisallowMultipleComponent]
     public abstract class BaseView : BaseUI
     {
         /// <summary>
@@ -244,7 +244,7 @@ namespace UniVue.UI
                 if (component.Name == componentName && component is T)
                     component.Show();
         }
-        
+
         /// <summary>
         /// 显示指定类型的组件
         /// <para>如果有多个同类型的组件，则都会被打开</para>
@@ -255,7 +255,7 @@ namespace UniVue.UI
                 if (component is T)
                     component.Show();
         }
-        
+
         /// <summary>
         /// 隐藏指定名称的组件
         /// <para>如果有多个同名的组件则都会被隐藏</para>
@@ -279,7 +279,7 @@ namespace UniVue.UI
                 if (component.Name == componentName && component is T)
                     component.Hide();
         }
-        
+
         /// <summary>
         /// 隐藏指定类型的组件
         /// <para>所有类型一致的组件都会被隐藏</para>
@@ -290,7 +290,7 @@ namespace UniVue.UI
                 if (component is T)
                     component.Hide();
         }
-        
+
         /// <summary>
         /// 获取指定名称的组件
         /// </summary>
@@ -321,9 +321,10 @@ namespace UniVue.UI
                     componentT = t;
                     return true;
                 }
+
             return false;
         }
-        
+
         /// <summary>
         /// 获取指定类型的组件
         /// </summary>
@@ -337,7 +338,7 @@ namespace UniVue.UI
 
             return null;
         }
-        
+
         /// <summary>
         /// 获取指定类型的组件
         /// </summary>
@@ -346,13 +347,14 @@ namespace UniVue.UI
         public bool TryGetViewComponent<T>(out T componentT) where T : BaseComponent
         {
             componentT = null;
-            
+
             foreach (BaseComponent component in Components)
                 if (component is T t)
                 {
                     componentT = t;
                     return true;
                 }
+
             return false;
         }
 
@@ -363,7 +365,7 @@ namespace UniVue.UI
         /// <returns></returns>
         public IndexableCollectionIterator<T, BaseUI> GetViewComponents<T>() where T : BaseComponent
         {
-            return new(_viewUIs);
+            return new IndexableCollectionIterator<T, BaseUI>(_viewUIs);
         }
 
         /// <summary>
@@ -475,8 +477,8 @@ namespace UniVue.UI
 
             _recordCreateStatus.Clear();
             _viewUIs.Clear();
-            InternalObjectPool<List<BaseUI>>.Shared.Return(_viewUIs);
-            InternalObjectPool<Dictionary<BaseUI, bool>>.Shared.Return(_recordCreateStatus);
+            InternalObjectPool<List<BaseUI>>.Shared.Return(ref _viewUIs);
+            InternalObjectPool<Dictionary<BaseUI, bool>>.Shared.Return(ref _recordCreateStatus);
         }
 
 #endregion

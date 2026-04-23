@@ -23,16 +23,16 @@ public sealed partial class OpComponent : BaseComponent
 #region UniVue Auto-Generated — DO NOT MODIFY
 partial class OpComponent
 {
-    private TMPro.TMP_InputField _CodeInput;
-    public TMPro.TMP_InputField CodeInput => _CodeInput ? _CodeInput : (_CodeInput = FindByPath($"{UI.name}/CodeInput")?.GetComponent<TMPro.TMP_InputField>());
+    [UniVue.UI.LazyInitUI("/CodeInput")]
+    public TMPro.TMP_InputField CodeInput { get; }
 
-    private TMPro.TextMeshProUGUI _Text;
-    public TMPro.TextMeshProUGUI Text => _Text ? _Text : (_Text = FindByPath($"{UI.name}/CodeInput/Text Area/Text")?.GetComponent<TMPro.TextMeshProUGUI>());
+    [UniVue.UI.LazyInitUI("/CodeInput/Text Area/Text")]
+    public TMPro.TextMeshProUGUI Text { get; }
 
-    private UnityEngine.UI.Button _ExeBtn;
-    public UnityEngine.UI.Button ExeBtn => _ExeBtn ? _ExeBtn : (_ExeBtn = FindByPath($"{UI.name}/ExeBtn")?.GetComponent<UnityEngine.UI.Button>());
+    [UniVue.UI.LazyInitUI("/ExeBtn")]
+    public UnityEngine.UI.Button ExeBtn { get; }
 
-    private TMPro.TextMeshProUGUI _TitleTxt;
-    public TMPro.TextMeshProUGUI TitleTxt => _TitleTxt ? _TitleTxt : (_TitleTxt = FindByPath($"{UI.name}/TitleTxt")?.GetComponent<TMPro.TextMeshProUGUI>());
+    [UniVue.UI.LazyInitUI("/TitleTxt")]
+    public TMPro.TextMeshProUGUI TitleTxt { get; }
 }
 #endregion // UniVue Auto-Generated

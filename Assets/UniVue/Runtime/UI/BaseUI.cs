@@ -19,7 +19,6 @@ namespace UniVue.UI
     /// 不建议使用MonoBehaviour的任何函数，框架内部自有一套生命周期管理函数，继承自MonoBehaviour只是方便绑定UI预制体
     /// </summary>
     [RequireComponent(typeof(RectTransform))]
-    [DisallowMultipleComponent]
     public abstract class BaseUI : MonoBehaviour
     {
         private List<ulong> _coroutines;
@@ -88,8 +87,8 @@ namespace UniVue.UI
             Disposed = true;
             CoroutineMgr.Kill(_updateCoroutine);
             _updateCoroutine = 0;
-            InternalObjectPool<List<ulong>>.Shared.Return(_coroutines);
-            InternalObjectPool<List<ulong>>.Shared.Return(_timers);
+            InternalObjectPool<List<ulong>>.Shared.Return(ref _coroutines);
+            InternalObjectPool<List<ulong>>.Shared.Return(ref _timers);
         }
 
         [Conditional("UNITY_EDITOR")]

@@ -66,7 +66,7 @@ namespace Framwork.Utils
         {
             if (string.IsNullOrEmpty(path) || !self) return null;
 
-            static ReadOnlySpan<char> ConsumePathSegment(ReadOnlySpan<char> path, ref int index)
+            static ReadOnlySpan<char> ConsumePathSegment(in ReadOnlySpan<char> path, ref int index)
             {
                 int len = path.Length;
                 while (index < len && path[index] == '/') index++;
@@ -76,7 +76,7 @@ namespace Framwork.Utils
                 return path.Slice(start, index - start);
             }
 
-            static bool NameEqualsOrdinal(ReadOnlySpan<char> span, string name)
+            static bool NameEqualsOrdinal(in ReadOnlySpan<char> span, string name)
             {
                 if (name == null) return span.IsEmpty;
                 if (span.Length != name.Length) return false;
@@ -86,7 +86,7 @@ namespace Framwork.Utils
                 return true;
             }
 
-            static Transform FindDirectChildByName(Transform parent, ReadOnlySpan<char> nameSpan)
+            static Transform FindDirectChildByName(Transform parent, in ReadOnlySpan<char> nameSpan)
             {
                 int count = parent.childCount;
                 for (int i = 0; i < count; i++)

@@ -1,5 +1,8 @@
+using UnityEngine;
+
 namespace UniVue.UI
 {
+    [DisallowMultipleComponent]
     public abstract class BaseComponent : BaseUI
     {
         private string _name;

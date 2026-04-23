@@ -7,7 +7,7 @@ using Unity.CompilationPipeline.Common.Diagnostics;
 
 namespace UniVue.CodeGen
 {
-    internal static class UIInjector
+    internal static class UIRenderBindingsInjector
     {
         private const string BaseUIFullName = "UniVue.UI.BaseUI";
         private const string BaseModelFullName = "UniVue.Model.BaseModel";

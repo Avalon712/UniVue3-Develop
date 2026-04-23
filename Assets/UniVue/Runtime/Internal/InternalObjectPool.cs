@@ -74,20 +74,22 @@ namespace UniVue.Internal
             return item;
         }
 
-        public void Return(T item, Action<T> disposeFunc)
+        public void Return(ref T item, Action<T> disposeFunc)
         {
             if (item == null) return;
             disposeFunc?.Invoke(item);
             if (Count >= MaxCapacity || !_itemsSet.Add(item)) return;
             _items.Push(item);
+            item = null;
         }
 
-        public void Return(T item)
+        public void Return(ref T item)
         {
             if (item == null) return;
             _disposeFunc?.Invoke(item);
             if (Count >= MaxCapacity || !_itemsSet.Add(item)) return;
             _items.Push(item);
+            item = null;
         }
     }
 }

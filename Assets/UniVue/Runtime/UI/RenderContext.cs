@@ -77,7 +77,7 @@ namespace UniVue.UI
                     if (propertyNames.Count <= 0)
                     {
                         _needRerenderProperties.Remove(model);
-                        InternalObjectPool<HashSet<string>>.Shared.Return(propertyNames);
+                        InternalObjectPool<HashSet<string>>.Shared.Return(ref propertyNames);
                     }
                 }
 
@@ -116,7 +116,7 @@ namespace UniVue.UI
         private void Render(RenderGraph graph, HashSet<string> propertyNames, BaseModel model,
                             HashSet<RenderGraph.Node> recordHadRenderedNodes)
         {
-            if(!graph.Enable && graph.Dirty) return;
+            if (!graph.Enable && graph.Dirty) return;
             if (!graph.EventOrModelNodes.TryGetValue(model, out RenderGraph.Node modelNode)) return;
 
             using InternalTempCollection<HashSet<RenderGraph.Node>, RenderGraph.Node> renderNodes = new(null);
@@ -139,6 +139,7 @@ namespace UniVue.UI
                     graph.Dirty = true;
                     return;
                 }
+
                 renderNode.RenderFunc.Invoke();
                 recordHadRenderedNodes.Add(renderNode);
             }
@@ -146,7 +147,7 @@ namespace UniVue.UI
 
         private void Render(RenderGraph graph, in EventKey eventKey, HashSet<RenderGraph.Node> recordHadRenderedNodes)
         {
-            if(!graph.Enable && graph.Dirty) return; 
+            if (!graph.Enable && graph.Dirty) return;
             if (!graph.EventOrModelNodes.TryGetValue(eventKey, out RenderGraph.Node eventNode)) return;
 
             using InternalTempCollection<HashSet<RenderGraph.Node>, RenderGraph.Node> renderNodes = new(null);
@@ -163,6 +164,7 @@ namespace UniVue.UI
                     graph.Dirty = true;
                     return;
                 }
+
                 renderNode.RenderFunc.Invoke();
                 recordHadRenderedNodes.Add(renderNode);
             }
@@ -212,7 +214,7 @@ namespace UniVue.UI
 
                 _modelGraphs.Remove(model);
                 model.OnPropertyChanged -= NotifyPropertyChanged;
-                InternalObjectPool<HashSet<RenderGraph>>.Shared.Return(graphs);
+                InternalObjectPool<HashSet<RenderGraph>>.Shared.Return(ref graphs);
             }
 
             foreach (EventKey eventKey in tempEventKeys)
@@ -223,7 +225,7 @@ namespace UniVue.UI
                 if (graphs.Count > 0) continue;
 
                 _eventGraphs.Remove(eventKey);
-                InternalObjectPool<HashSet<RenderGraph>>.Shared.Return(graphs);
+                InternalObjectPool<HashSet<RenderGraph>>.Shared.Return(ref graphs);
             }
 
             graph.Dispose();
@@ -242,10 +244,10 @@ namespace UniVue.UI
             if (_needRerenderProperties.Remove(model, out HashSet<string> propertyNames))
             {
                 propertyNames.Clear();
-                InternalObjectPool<HashSet<string>>.Shared.Return(propertyNames);
+                InternalObjectPool<HashSet<string>>.Shared.Return(ref propertyNames);
             }
 
-            InternalObjectPool<HashSet<RenderGraph>>.Shared.Return(graphs);
+            InternalObjectPool<HashSet<RenderGraph>>.Shared.Return(ref graphs);
             model.OnPropertyChanged -= NotifyPropertyChanged;
         }
 
@@ -259,7 +261,7 @@ namespace UniVue.UI
             if (!_eventGraphs.Remove(eventKey, out HashSet<RenderGraph> graphs)) return;
             foreach (RenderGraph graph in graphs) graph.Remove(eventKey);
             graphs.Clear();
-            InternalObjectPool<HashSet<RenderGraph>>.Shared.Return(graphs);
+            InternalObjectPool<HashSet<RenderGraph>>.Shared.Return(ref graphs);
         }
 
         public void ClearAll()

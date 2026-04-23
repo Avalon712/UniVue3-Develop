@@ -4,9 +4,8 @@ using UniVue.UI;
 
 public sealed partial class CommonView : BaseView
 {
+    private readonly List<ItemData> _items = new(1000);
     public override int Layer { get; } = 1;
-    
-    private List<ItemData> _items = new(1000);
 
     protected override void OnInit()
     {
@@ -31,19 +30,12 @@ public sealed partial class CommonView : BaseView
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
-
 partial class CommonView
 {
-    private CloseBtnUI _CloseBtnUI;
-    private RectTransform _Container;
+    [UniVue.UI.LazyInitUI("/#Container")]
+    public UnityEngine.RectTransform Container { get; }
 
-    public RectTransform Container => _Container
-        ? _Container
-        : _Container = FindByPath($"{UI.name}/#Container")?.GetComponent<RectTransform>();
-
-    public CloseBtnUI CloseBtnUI => _CloseBtnUI
-        ? _CloseBtnUI
-        : _CloseBtnUI = FindByPath($"{UI.name}/CloseBtnUI")?.GetComponent<CloseBtnUI>();
+    [UniVue.UI.LazyInitUI("/CloseBtnUI")]
+    public CloseBtnUI CloseBtnUI { get; }
 }
-
 #endregion // UniVue Auto-Generated

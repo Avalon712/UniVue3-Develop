@@ -28,6 +28,7 @@ namespace UniVue.CodeGen
             {
                 if (!path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) continue;
                 dirty |= ProcessPrefab(path, manifest);
+                dirty |= HandleImportedPrefabCodegenRootRemoved(path, manifest);
             }
 
             foreach (string path in deletedAssets)
@@ -50,7 +51,7 @@ namespace UniVue.CodeGen
             if (dirty) SaveManifest(manifest);
         }
 
-        [MenuItem("UniVue/Code Gen/GenerateUICode")]
+        [MenuItem("UniVue/Code Gen/Generate All UI Code")]
         public static void ForceGenerateAll()
         {
             string[] allPrefabs = AssetDatabase.FindAssets("t:Prefab");
@@ -71,6 +72,40 @@ namespace UniVue.CodeGen
             if (dirty) SaveManifest(manifest);
             AssetDatabase.Refresh();
         }
+
+        // priority 越小越靠上；与校验项使用相同数值（Unity 要求一致）
+        [MenuItem("Assets/UniVue/CodeGen/Generate UI Code", false, -50000)]
+        public static void GenerateUICodeForSelectedPrefab()
+        {
+            ManifestData manifest = LoadManifest();
+            bool dirty = false;
+            foreach (UnityEngine.Object obj in Selection.objects)
+            {
+                string path = AssetDatabase.GetAssetPath(obj);
+                if (!PrefabAssetIsCodegenTarget(path)) continue;
+                dirty |= ProcessPrefab(path, manifest, forceRegenerate: true);
+            }
+
+            if (dirty) SaveManifest(manifest);
+            AssetDatabase.Refresh();
+        }
+
+        [MenuItem("Assets/UniVue/CodeGen/Generate UI Code", true, -50000)]
+        public static bool ValidateGenerateUICodeForSelectedPrefab()
+        {
+            if (Selection.objects.Length != 1) return false;
+            return PrefabAssetIsCodegenTarget(AssetDatabase.GetAssetPath(Selection.activeObject));
+        }
+
+        /// <summary>与菜单 <c>UniVue/Code Gen/Generate All UI Code</c> 相同，在 Project 资源右键菜单中提供入口。</summary>
+        [MenuItem("Assets/UniVue/CodeGen/Generate All UI Code", false, -49999)]
+        public static void RegenerateAllUICodeFromAssetsMenu()
+        {
+            ForceGenerateAll();
+        }
+
+        [MenuItem("Assets/UniVue/CodeGen/Generate All UI Code", true, -49999)]
+        public static bool ValidateRegenerateAllUICodeFromAssetsMenu() => true;
 
         #region Rule Discovery
 
@@ -108,7 +143,26 @@ namespace UniVue.CodeGen
 
         #region Prefab Processing
 
-        private static bool ProcessPrefab(string prefabPath, ManifestData manifest)
+        /// <summary>
+        /// 是否为 Project 中的预制体资源，且根节点上的 <see cref="BaseUI"/> 被至少一条代码生成规则接受（如 <see cref="BaseView"/> / <see cref="BaseComponent"/>）。
+        /// </summary>
+        private static bool PrefabAssetIsCodegenTarget(string prefabAssetPath)
+        {
+            if (string.IsNullOrEmpty(prefabAssetPath)) return false;
+            if (!prefabAssetPath.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) return false;
+
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabAssetPath);
+            if (!prefab || !prefab.TryGetComponent(out BaseUI rootUI)) return false;
+
+            foreach (UICodeGenRule rule in GetRules())
+            {
+                if (rule.InvokeFilter(prefab, rootUI)) return true;
+            }
+
+            return false;
+        }
+
+        private static bool ProcessPrefab(string prefabPath, ManifestData manifest, bool forceRegenerate = false)
         {
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
             if (!prefab || !prefab.TryGetComponent(out BaseUI rootUI)) return false;
@@ -130,7 +184,7 @@ namespace UniVue.CodeGen
 
             string newHash = ComputeHash(properties);
             PrefabRecord record = manifest.records.Find(r => r.prefabPath == prefabPath);
-            if (record != null && record.fieldsHash == newHash)
+            if (!forceRegenerate && record != null && record.fieldsHash == newHash)
                 return false;
 
             MonoScript monoScript = MonoScript.FromMonoBehaviour(rootUI);
@@ -180,9 +234,43 @@ namespace UniVue.CodeGen
             int idx = manifest.records.FindIndex(r => r.prefabPath == prefabPath);
             if (idx < 0) return false;
 
-            StripAutoGenRegionFromFile(manifest.records[idx].scriptPath);
+            string scriptPath = manifest.records[idx].scriptPath;
             manifest.records.RemoveAt(idx);
+            if (!ManifestHasRecordForScriptPath(manifest, scriptPath))
+                StripAutoGenRegionFromFile(scriptPath);
             return true;
+        }
+
+        /// <summary>
+        /// 预制体已导入但根节点不再挂载 <see cref="BaseUI"/>（例如移除了 BaseView）时：
+        /// 从清单中移除该预制体对应条目；若没有任何预制体仍关联同一脚本，则剥离该脚本中的自动生成区域。
+        /// </summary>
+        private static bool HandleImportedPrefabCodegenRootRemoved(string prefabPath, ManifestData manifest)
+        {
+            int idx = manifest.records.FindIndex(r => r.prefabPath == prefabPath);
+            if (idx < 0) return false;
+
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            if (!prefab || prefab.TryGetComponent(out BaseUI _))
+                return false;
+
+            string scriptPath = manifest.records[idx].scriptPath;
+            manifest.records.RemoveAt(idx);
+            if (!ManifestHasRecordForScriptPath(manifest, scriptPath))
+                StripAutoGenRegionFromFile(scriptPath);
+            return true;
+        }
+
+        private static bool ManifestHasRecordForScriptPath(ManifestData manifest, string scriptAssetPath)
+        {
+            if (string.IsNullOrEmpty(scriptAssetPath)) return false;
+            foreach (PrefabRecord r in manifest.records)
+            {
+                if (string.Equals(r.scriptPath, scriptAssetPath, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
         }
 
         #endregion
@@ -213,11 +301,10 @@ namespace UniVue.CodeGen
             for (int i = 0; i < sorted.Count; i++)
             {
                 GeneratedProperty p = sorted[i];
-                string bk = $"_{p.propertyName}";
-                string findArg = FormatFindByPathArgument(p.path);
-                sb.AppendLine($"{mi}private {p.propertyTypeFullName} {bk};");
-                sb.AppendLine(
-                    $"{mi}public {p.propertyTypeFullName} {p.propertyName} => {bk} ? {bk} : ({bk} = FindByPath({findArg})?.GetComponent<{p.propertyTypeFullName}>());");
+                string lazyPath = FormatLazyInitUiRelativePath(p.path);
+                string esc = EscapeCSharpStringLiteral(lazyPath);
+                sb.AppendLine($"{mi}[UniVue.UI.LazyInitUI(\"{esc}\")]");
+                sb.AppendLine($"{mi}public {p.propertyTypeFullName} {p.propertyName} {{ get; }}");
                 if (i < sorted.Count - 1) sb.AppendLine();
             }
 
@@ -228,54 +315,23 @@ namespace UniVue.CodeGen
         }
 
         /// <summary>
-        /// 生成 FindByPath 的参数表达式：首段改为运行时 <c>UI.name</c>，其余与 <see cref="GeneratedProperty.path"/> 一致。
-        /// 例如 path 为 <c>CommonView/CloseBtnUI</c> 时生成 <c>$"{UI.name}/CloseBtnUI"</c>。
+        /// 将 <see cref="GeneratedProperty.path"/>（RootName/子路径…）转为不含根名的相对路径，以 <c>/</c> 开头，与 <see cref="LazyInitUIAttribute"/> 一致。
         /// </summary>
-        private static string FormatFindByPathArgument(string path)
+        private static string FormatLazyInitUiRelativePath(string fullPath)
         {
-            if (string.IsNullOrEmpty(path))
-                return "\"\"";
-
-            int slash = path.IndexOf('/');
-            if (slash < 0)
-                return "$\"{UI.name}\"";
-
-            string tail = path.Substring(slash + 1);
-            if (string.IsNullOrEmpty(tail))
-                return "$\"{UI.name}\"";
-
-            return "$\"{UI.name}/" + EscapePathTailForRuntimeInterpolatedString(tail) + "\"";
+            if (string.IsNullOrEmpty(fullPath)) return "/";
+            int slash = fullPath.IndexOf('/');
+            if (slash < 0) return "/" + fullPath;
+            return fullPath.Substring(slash);
         }
 
-        /// <summary>
-        /// 将 path 中除首段外的部分转义后，嵌入生成代码里的 <c>$"…"</c> 插值字符串字面量。
-        /// </summary>
-        private static string EscapePathTailForRuntimeInterpolatedString(string tail)
+        private static string EscapeCSharpStringLiteral(string s)
         {
-            StringBuilder sb = new();
-            foreach (char c in tail)
-            {
-                switch (c)
-                {
-                    case '\\':
-                        sb.Append("\\\\");
-                        break;
-                    case '"':
-                        sb.Append("\\\"");
-                        break;
-                    case '{':
-                        sb.Append("{{");
-                        break;
-                    case '}':
-                        sb.Append("}}");
-                        break;
-                    default:
-                        sb.Append(c);
-                        break;
-                }
-            }
-
-            return sb.ToString();
+            if (string.IsNullOrEmpty(s)) return "";
+            return s.Replace("\\", "\\\\", StringComparison.Ordinal)
+                .Replace("\"", "\\\"", StringComparison.Ordinal)
+                .Replace("\r", "\\r", StringComparison.Ordinal)
+                .Replace("\n", "\\n", StringComparison.Ordinal);
         }
 
         private static void StripAutoGenRegionFromFile(string scriptAssetPath)

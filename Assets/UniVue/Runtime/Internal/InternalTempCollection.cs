@@ -53,7 +53,8 @@ namespace UniVue.Internal
             if (_disposed) return;
             _disposed = true;
             Collection.Clear();
-            InternalObjectPool<TCollection>.Shared.Return(Collection);
+            TCollection temp = Collection;
+            InternalObjectPool<TCollection>.Shared.Return(ref temp);
             Collection = null;
         }
 

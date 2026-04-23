@@ -11,25 +11,15 @@ public sealed partial class TipView : BaseView
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
-
 partial class TipView
 {
-    private CloseBtnUI _CloseBtn;
+    [global::UniVue.UI.LazyInitUIAttribute("/CloseBtn")]
+    public CloseBtnUI CloseBtn { get; }
 
-    private TextMeshProUGUI _MessageTxt;
+    [global::UniVue.UI.LazyInitUIAttribute("/MessageTxt")]
+    public TMPro.TextMeshProUGUI MessageTxt { get; }
 
-    private TextMeshProUGUI _TitleTxt;
-
-    public CloseBtnUI CloseBtn =>
-        _CloseBtn ? _CloseBtn : _CloseBtn = FindByPath($"{UI.name}/CloseBtn")?.GetComponent<CloseBtnUI>();
-
-    public TextMeshProUGUI MessageTxt => _MessageTxt
-        ? _MessageTxt
-        : _MessageTxt = FindByPath($"{UI.name}/MessageTxt")?.GetComponent<TextMeshProUGUI>();
-
-    public TextMeshProUGUI TitleTxt => _TitleTxt
-        ? _TitleTxt
-        : _TitleTxt = FindByPath($"{UI.name}/TitleTxt")?.GetComponent<TextMeshProUGUI>();
+    [global::UniVue.UI.LazyInitUIAttribute("/TitleTxt")]
+    public TMPro.TextMeshProUGUI TitleTxt { get; }
 }
-
 #endregion // UniVue Auto-Generated

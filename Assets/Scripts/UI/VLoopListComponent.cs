@@ -32,13 +32,9 @@ public sealed class ItemData : BaseModel
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
-
 partial class VLoopListComponent
 {
-    private LoopList _VLoopList;
-
-    public LoopList VLoopList =>
-        _VLoopList ? _VLoopList : _VLoopList = FindByPath($"{UI.name}/VLoopList")?.GetComponent<LoopList>();
+    [global::UniVue.UI.LazyInitUIAttribute("/VLoopList")]
+    public UniVue.UI.Widegts.LoopList VLoopList { get; }
 }
-
 #endregion // UniVue Auto-Generated

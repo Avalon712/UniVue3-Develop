@@ -12,20 +12,12 @@ public sealed partial class GMView : BaseView
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
-
 partial class GMView
 {
-    private OpComponent _CloseViewOp;
+    [global::UniVue.UI.LazyInitUIAttribute("/CloseViewOp")]
+    public OpComponent CloseViewOp { get; }
 
-    private OpComponent _OpenViewOp;
-
-    public OpComponent CloseViewOp => _CloseViewOp
-        ? _CloseViewOp
-        : _CloseViewOp = FindByPath($"{UI.name}/CloseViewOp")?.GetComponent<OpComponent>();
-
-    public OpComponent OpenViewOp => _OpenViewOp
-        ? _OpenViewOp
-        : _OpenViewOp = FindByPath($"{UI.name}/OpenViewOp")?.GetComponent<OpComponent>();
+    [global::UniVue.UI.LazyInitUIAttribute("/OpenViewOp")]
+    public OpComponent OpenViewOp { get; }
 }
-
 #endregion // UniVue Auto-Generated

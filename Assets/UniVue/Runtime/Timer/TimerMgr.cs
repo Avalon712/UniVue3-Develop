@@ -88,7 +88,7 @@ namespace UniVue.Timer
             timerTask.surplusWaitTime = 0f;
             timerTask.delay = 0f;
             timerTask.interval = 0f;
-            InternalObjectPool<TimerTask>.Shared.Return(timerTask);
+            InternalObjectPool<TimerTask>.Shared.Return(ref timerTask);
         }
 
         public static TimerBuilder Create()
