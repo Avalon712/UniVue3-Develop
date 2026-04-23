@@ -35,6 +35,7 @@ public class EventTest : MonoBehaviour
         Run(Test_EventKey_Enum_MultipleValues);
         Run(Test_EventKey_NotEventKey_DispatchSkipped);
         Run(Test_CurrentTriggeredEvent_DuringDispatch);
+        Run(Test_Dispatch_DeadLoopChain_Detection);
         Run(Test_OnEvent_GlobalListener);
         Run(Test_MultipleCallbacksSameEvent);
         Run(Test_On_WithExplicitTarget_NoArg);
@@ -511,6 +512,100 @@ public class EventTest : MonoBehaviour
         CleanupEvent(key);
     }
 
+    /// <summary>
+    /// 多种嵌套环：长链、三角、自环，以及多链路汇交（菱形）与经桥接跳回前驱的交叉死循环；重复进入已在栈上的 Key 时应 Warn，不卡死。
+    /// </summary>
+    private void Test_Dispatch_DeadLoopChain_Detection()
+    {
+        // 1) 长链：A→B→C→D→E→F→B（经多跳后再次进入 B）
+        Debug.Log("[Test] 死循环 ① 长链 A→B→C→D→E→F→B（第二次 Dispatch(B) 应被拦截，控制台 Warn）");
+        EventKey kA = "A", kB = "B", kC = "C", kD = "D", kE = "E", kF = "F";
+        int cA = 0, cB = 0, cC = 0, cD = 0, cE = 0, cF = 0;
+
+        EventMgr.On(kA, () => { cA++; EventMgr.Dispatch(kB); });
+        EventMgr.On(kB, () => { cB++; EventMgr.Dispatch(kC); });
+        EventMgr.On(kC, () => { cC++; EventMgr.Dispatch(kD); });
+        EventMgr.On(kD, () => { cD++; EventMgr.Dispatch(kE); });
+        EventMgr.On(kE, () => { cE++; EventMgr.Dispatch(kF); });
+        EventMgr.On(kF, () => { cF++; EventMgr.Dispatch(kB); });
+
+        EventMgr.Dispatch(kA);
+
+        Assert(cA == 1 && cB == 1 && cC == 1 && cD == 1 && cE == 1 && cF == 1,
+            "长链上各监听各执行一次，第二次 Dispatch(B) 不重复跑 B 的监听");
+
+        CleanupEvent(kA, kB, kC, kD, kE, kF);
+
+        // 2) 三角：A→B→C→D→B（入口 A，经 B、C、D 后回到已在栈上的 B）
+        Debug.Log("[Test] 死循环 ② 三角 A→B→C→D→B（第二次 Dispatch(B) 应被拦截）");
+        kA = "A"; kB = "B"; kC = "C"; kD = "D";
+        cA = 0; cB = 0; cC = 0; cD = 0;
+
+        EventMgr.On(kA, () => { cA++; EventMgr.Dispatch(kB); });
+        EventMgr.On(kB, () => { cB++; EventMgr.Dispatch(kC); });
+        EventMgr.On(kC, () => { cC++; EventMgr.Dispatch(kD); });
+        EventMgr.On(kD, () => { cD++; EventMgr.Dispatch(kB); });
+
+        EventMgr.Dispatch(kA);
+
+        Assert(cA == 1 && cB == 1 && cC == 1 && cD == 1,
+            "三角链上各监听各执行一次，第二次 Dispatch(B) 不重复执行");
+
+        CleanupEvent(kA, kB, kC, kD);
+
+        // 3) 自环：A→A
+        Debug.Log("[Test] 死循环 ③ 监听内 Dispatch(A)（自环，应被拦截）");
+        kA = "A";
+        cA = 0;
+        EventMgr.On(kA, () =>
+        {
+            cA++;
+            EventMgr.Dispatch(kA);
+        });
+        EventMgr.Dispatch(kA);
+        Assert(cA == 1, "自环只触发一次监听体");
+
+        CleanupEvent(kA);
+
+        // 4) 菱形汇交：A→B→C→D→E→F→D（左支到 D，右支离开后再入 D）
+        Debug.Log("[Test] 死循环 ④ 双支汇交 A→B→C→D→E→F→D（第二次 Dispatch(D) 应被拦截）");
+        kA = "A"; kB = "B"; kC = "C"; kD = "D"; kE = "E"; kF = "F";
+        cA = 0; cB = 0; cC = 0; cD = 0; cE = 0; cF = 0;
+
+        EventMgr.On(kA, () => { cA++; EventMgr.Dispatch(kB); });
+        EventMgr.On(kB, () => { cB++; EventMgr.Dispatch(kC); });
+        EventMgr.On(kC, () => { cC++; EventMgr.Dispatch(kD); });
+        EventMgr.On(kD, () => { cD++; EventMgr.Dispatch(kE); });
+        EventMgr.On(kE, () => { cE++; EventMgr.Dispatch(kF); });
+        EventMgr.On(kF, () => { cF++; EventMgr.Dispatch(kD); });
+
+        EventMgr.Dispatch(kA);
+
+        Assert(cA == 1 && cB == 1 && cC == 1 && cD == 1 && cE == 1 && cF == 1,
+            "汇交菱形链上各监听各执行一次，第二次 Dispatch(D) 不重复");
+
+        CleanupEvent(kA, kB, kC, kD, kE, kF);
+
+        // 5) 桥接跳回：A→B→C→D→E→F→B（F 为桥，回到较早的 B）
+        Debug.Log("[Test] 死循环 ⑤ 交叉跳回 A→B→C→D→E→F→B（第二次 Dispatch(B) 应被拦截）");
+        kA = "A"; kB = "B"; kC = "C"; kD = "D"; kE = "E"; kF = "F";
+        cA = 0; cB = 0; cC = 0; cD = 0; cE = 0; cF = 0;
+
+        EventMgr.On(kA, () => { cA++; EventMgr.Dispatch(kB); });
+        EventMgr.On(kB, () => { cB++; EventMgr.Dispatch(kC); });
+        EventMgr.On(kC, () => { cC++; EventMgr.Dispatch(kD); });
+        EventMgr.On(kD, () => { cD++; EventMgr.Dispatch(kE); });
+        EventMgr.On(kE, () => { cE++; EventMgr.Dispatch(kF); });
+        EventMgr.On(kF, () => { cF++; EventMgr.Dispatch(kB); });
+
+        EventMgr.Dispatch(kA);
+
+        Assert(cA == 1 && cB == 1 && cC == 1 && cD == 1 && cE == 1 && cF == 1,
+            "交叉跳回链上各监听各执行一次，经 F 的第二次 Dispatch(B) 不重复");
+
+        CleanupEvent(kA, kB, kC, kD, kE, kF);
+    }
+
     // ---- OnEvent 全局监听 ----
     private void Test_OnEvent_GlobalListener()
     {
@@ -518,7 +613,8 @@ public class EventTest : MonoBehaviour
         EventKey key = "test_on_event";
         EventKey receivedKey = new();
         Action<EventKey> globalCb = k => receivedKey = k;
-
+        
+        EventMgr.On(key, () => { });
         EventMgr.OnEvent += globalCb;
         EventMgr.Dispatch(key);
 

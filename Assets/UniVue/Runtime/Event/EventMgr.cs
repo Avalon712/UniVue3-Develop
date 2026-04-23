@@ -10,6 +10,7 @@ namespace UniVue.Event
     public static class EventMgr
     {
         private static readonly Dictionary<EventKey, HashSet<EventCallback>> _callbacks = new(128);
+        private static readonly HashSet<EventKey> _dispatchPaths = new(16);
 
         /// <summary>
         /// 当前触发的事件
@@ -227,17 +228,27 @@ namespace UniVue.Event
         {
             if (eventKey.Type == EventKeyType.NotEventKey) return;
             HashSet<EventCallback> callbacks = GetCallbacks(eventKey, false);
-            CurrentTriggeredEvent = eventKey;
+           
             if (callbacks != null)
             {
+                if (!_dispatchPaths.Add(eventKey))
+                {
+                    LogUtil.Warn($"检查到死循环链路[{string.Join(" => ", _dispatchPaths)} => {eventKey}]，事件执行已被强制中断！");
+                    return;
+                }
+                
+                CurrentTriggeredEvent = eventKey;
+                
                 using InternalTempCollection<List<EventCallback>, EventCallback> tempCollection = new(callbacks);
                 foreach (EventCallback callback in tempCollection.Collection)
                     if (callbacks.Contains(callback) && callback.Invoke() && printLog)
                         PrintLog(eventKey, callback);
+                
+                OnEvent?.Invoke(eventKey);
+                _dispatchPaths.Clear();
+                CurrentTriggeredEvent = new EventKey();
             }
 
-            OnEvent?.Invoke(eventKey);
-            CurrentTriggeredEvent = new EventKey();
         }
 
 
@@ -252,17 +263,26 @@ namespace UniVue.Event
         {
             if (eventKey.Type == EventKeyType.NotEventKey) return;
             HashSet<EventCallback> callbacks = GetCallbacks(eventKey, false);
-            CurrentTriggeredEvent = eventKey;
             if (callbacks != null)
             {
+                if (!_dispatchPaths.Add(eventKey))
+                {
+                    LogUtil.Warn($"检查到死循环链路[{string.Join(" => ", _dispatchPaths)} => {eventKey}]，事件执行已被强制中断！");
+                    return;
+                }
+                
+                CurrentTriggeredEvent = eventKey;
+                
                 using InternalTempCollection<List<EventCallback>, EventCallback> tempCollection = new(callbacks);
                 foreach (EventCallback callback in tempCollection.Collection)
                     if (callbacks.Contains(callback) && callback.Invoke(eventArg) && printLog)
                         PrintLog(eventKey, callback);
+                
+                OnEvent?.Invoke(eventKey);
+                _dispatchPaths.Clear();
+                CurrentTriggeredEvent = new EventKey();
             }
 
-            OnEvent?.Invoke(eventKey);
-            CurrentTriggeredEvent = new EventKey();
         }
     }
 }
