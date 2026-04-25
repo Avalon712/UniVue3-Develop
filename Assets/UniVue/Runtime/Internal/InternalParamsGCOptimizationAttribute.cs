@@ -16,7 +16,5 @@ namespace UniVue.Internal
     ///       |->编译时替换： TestMethod(Params&lt;string&gt;._("A","B","C")); // 0GC
     /// </code>
     /// </summary>
-    internal sealed class InternalParamsGCOptimizationAttribute : Attribute
-    {
-    }
+    internal sealed class InternalParamsGCOptimizationAttribute : Attribute { }
 }

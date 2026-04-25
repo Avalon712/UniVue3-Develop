@@ -5,9 +5,7 @@ namespace UniVue.Internal
 {
     internal sealed class InternalReferenceComparer<T> : IEqualityComparer<T>
     {
-        private InternalReferenceComparer()
-        {
-        }
+        private InternalReferenceComparer() { }
 
         public static InternalReferenceComparer<T> Shared { get; } = new();
 

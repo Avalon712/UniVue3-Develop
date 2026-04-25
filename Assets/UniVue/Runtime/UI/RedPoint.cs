@@ -40,8 +40,10 @@ namespace UniVue.UI
         public IEnumerable<ulong> GetKeys(bool status)
         {
             foreach (ulong key in _keys)
+            {
                 if (UIMgr.RedPointMgr.GetStatus(key) == status)
                     yield return key;
+            }
         }
 
         /// <summary>
@@ -52,8 +54,11 @@ namespace UniVue.UI
         public ulong GetKey(bool status)
         {
             foreach (ulong key in _keys)
+            {
                 if (UIMgr.RedPointMgr.GetStatus(key) == status)
                     return key;
+            }
+
             return 0;
         }
 

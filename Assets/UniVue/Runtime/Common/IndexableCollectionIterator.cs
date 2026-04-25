@@ -11,7 +11,8 @@ namespace UniVue.Common
     public struct IndexableCollectionIterator<TRequireType, TCollectionItemType>
         : IEnumerator<TRequireType>,
           IEnumerable<TRequireType>,
-          IEquatable<IndexableCollectionIterator<TRequireType, TCollectionItemType>> where TRequireType : TCollectionItemType
+          IEquatable<IndexableCollectionIterator<TRequireType, TCollectionItemType>>
+        where TRequireType : TCollectionItemType
     {
         private TCollectionItemType[] _array;
         private List<TCollectionItemType> _list;
@@ -70,6 +71,7 @@ namespace UniVue.Common
                     break;
                 }
             }
+
             return hasNext;
         }
 

@@ -38,20 +38,22 @@ namespace UniVue.UI
         {
             return $"Layer{layer}";
         }
-        
+
         public GameObject GetLayerRoot(int layer)
         {
             string layerName = GetLayerName(layer);
             foreach (Transform transform in _layers)
+            {
                 if (transform.name == layerName)
                     return transform.gameObject;
+            }
 
             return CreateNewLayer(layerName);
         }
 
         public GameObject Root { get; }
         public GameObject HideLayer { get; }
-        
+
         private GameObject CreateNewLayer(string layerName)
         {
             _layers.Clear();
@@ -67,7 +69,7 @@ namespace UniVue.UI
             Canvas canvas = Root.GetComponent<Canvas>();
             GameObject newLayerObj = new(layerName);
             RectTransform newLayer = newLayerObj.AddComponent<RectTransform>();
-            
+
             newLayer.SetParent(root);
             newLayer.anchorMin = new Vector2(0.5f, 0.5f);
             newLayer.anchorMax = new Vector2(0.5f, 0.5f);
@@ -78,7 +80,7 @@ namespace UniVue.UI
             newLayer.rotation = Quaternion.identity;
             newLayer.localPosition = Vector3.zero;
             newLayer.sizeDelta = (canvas.transform as RectTransform).sizeDelta;
-            
+
             _layers.Add(newLayer);
 
             _layers.Sort((l1, l2) => string.Compare(l1.name, l2.name, StringComparison.Ordinal));

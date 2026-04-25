@@ -81,8 +81,11 @@ namespace UniVue.Utils
                 if (name == null) return span.IsEmpty;
                 if (span.Length != name.Length) return false;
                 for (int i = 0; i < span.Length; i++)
+                {
                     if (span[i] != name[i])
                         return false;
+                }
+
                 return true;
             }
 

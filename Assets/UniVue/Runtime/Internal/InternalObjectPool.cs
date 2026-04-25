@@ -14,9 +14,7 @@ namespace UniVue.Internal
 
         private uint _maxCapacity = uint.MaxValue;
 
-        private InternalObjectPool()
-        {
-        }
+        private InternalObjectPool() { }
 
         public InternalObjectPool(Func<T> createFunc, Action<T> disposeFunc)
         {

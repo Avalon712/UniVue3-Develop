@@ -33,8 +33,10 @@ namespace UniVue.Internal
             _collection = InternalObjectPool<TCollection>.Shared.Rent();
             _collection.Clear();
             if (collection != null)
+            {
                 foreach (TItem item in collection)
                     _collection.Add(item);
+            }
         }
 
         public InternalTempCollection(IEnumerable<TItem> collection)
@@ -43,8 +45,10 @@ namespace UniVue.Internal
             _collection = InternalObjectPool<TCollection>.Shared.Rent();
             _collection.Clear();
             if (collection != null)
+            {
                 foreach (TItem item in collection)
                     _collection.Add(item);
+            }
         }
 
         public static implicit operator TCollection(InternalTempCollection<TCollection, TItem> collection)

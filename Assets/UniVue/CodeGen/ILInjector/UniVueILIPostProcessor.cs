@@ -50,7 +50,7 @@ namespace UniVue.CodeGen
                 }
 
                 AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(peStream, readerParameters);
-                bool modified = UIRenderBindingsInjector.Inject(assemblyDefinition, diagnostics);
+                bool modified = false;
                 modified |= ParamsGCOptimizationInjector.Inject(assemblyDefinition, diagnostics);
                 modified |= UILazyInitUIInjector.Inject(assemblyDefinition, diagnostics);
                 modified |= NotifyPropertyChangedInjector.Inject(assemblyDefinition);
@@ -110,7 +110,7 @@ namespace UniVue.CodeGen
     }
 
     /// <summary>
-    /// Unity 编译管线传入的 <see cref="ICompiledAssembly.References"/> 未必包含拆分模块（如 <c>UnityEngine.CoreModule</c>）的显式项，
+    /// Unity 编译管线传入的 <see cref="ICompiledAssembly.References" /> 未必包含拆分模块（如 <c>UnityEngine.CoreModule</c>）的显式项，
     /// 但解析 <c>MonoBehaviour</c> 等类型时会向 Cecil 请求该程序集。除名称映射外，在所有引用所在目录中按 <c>{Name}.dll</c> 与大小写不敏感回退查找。
     /// </summary>
     internal sealed class PostProcessorAssemblyResolver : DefaultAssemblyResolver
@@ -172,7 +172,7 @@ namespace UniVue.CodeGen
                         foreach (string dll in Directory.GetFiles(dir, "*.dll", SearchOption.TopDirectoryOnly))
                         {
                             if (!string.Equals(Path.GetFileNameWithoutExtension(dll), name.Name,
-                                    StringComparison.OrdinalIgnoreCase))
+                                               StringComparison.OrdinalIgnoreCase))
                                 continue;
                             if (File.Exists(dll))
                                 return AssemblyDefinition.ReadAssembly(dll, readParams);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UniVue.UI;
 
@@ -9,6 +10,7 @@ public sealed partial class CommonView : BaseView
 
     protected override void OnInit()
     {
+        enableUpdatePerSecond = true;
         //这里Add之后在OnOpen中去获取可能会获得为null，因为这里具有延时，调用不一定同步
         AddComponent<VLoopListComponent>(Container, (success, component) =>
         {
@@ -16,6 +18,15 @@ public sealed partial class CommonView : BaseView
             for (int i = 0; i < 1000; i++) _items.Add(new ItemData { Label = $"Label {i}", IsSelected = i % 2 == 0 });
             component.SetData(_items);
         });
+    }
+
+    protected override void OnUpdatePerSecond()
+    {
+        for (int i = 0; i < _items.Count; i++)
+        {
+            ItemData item = _items[i];
+            item.Label = $"Label {i} {DateTime.Now.Second}";
+        }
     }
 
     protected override void OnOpen()

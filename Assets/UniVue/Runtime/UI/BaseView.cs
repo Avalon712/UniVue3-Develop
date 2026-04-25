@@ -80,11 +80,13 @@ namespace UniVue.UI
             }
 
             foreach (BaseView childView in ChildViews)
+            {
                 if (childView.ViewName == viewName && !childView.Status)
                 {
                     childView.OnOpenInternal(args);
                     return true;
                 }
+            }
 
             return false;
         }
@@ -120,12 +122,14 @@ namespace UniVue.UI
             }
 
             foreach (BaseView childView in ChildViews)
+            {
                 if (childView.GetType() == typeof(T))
                 {
                     childView.OnOpenInternal(args);
                     callback?.Invoke(true);
                     return;
                 }
+            }
 
             if (mountNode)
             {
@@ -176,11 +180,13 @@ namespace UniVue.UI
             CheckDisposedAndInitialized();
             if (Disposed) return;
             foreach (BaseView childView in ChildViews)
+            {
                 if (childView.ViewName == viewName)
                 {
                     childView.OnCloseInternal();
                     return;
                 }
+            }
         }
 
         /// <summary>
@@ -252,8 +258,10 @@ namespace UniVue.UI
         public void ShowViewComponent(string componentName)
         {
             foreach (BaseComponent component in Components)
+            {
                 if (component.Name == componentName)
                     component.Show();
+            }
         }
 
         /// <summary>
@@ -264,8 +272,10 @@ namespace UniVue.UI
         public void ShowViewComponent<T>(string componentName) where T : BaseComponent
         {
             foreach (BaseComponent component in Components)
+            {
                 if (component.Name == componentName && component is T)
                     component.Show();
+            }
         }
 
         /// <summary>
@@ -275,8 +285,10 @@ namespace UniVue.UI
         public void ShowViewComponent<T>() where T : BaseComponent
         {
             foreach (BaseComponent component in Components)
+            {
                 if (component is T)
                     component.Show();
+            }
         }
 
         /// <summary>
@@ -287,8 +299,10 @@ namespace UniVue.UI
         public void HideViewComponent(string componentName)
         {
             foreach (BaseComponent component in Components)
+            {
                 if (component.Name == componentName)
                     component.Hide();
+            }
         }
 
         /// <summary>
@@ -299,8 +313,10 @@ namespace UniVue.UI
         public void HideViewComponent<T>(string componentName) where T : BaseComponent
         {
             foreach (BaseComponent component in Components)
+            {
                 if (component.Name == componentName && component is T)
                     component.Hide();
+            }
         }
 
         /// <summary>
@@ -310,8 +326,10 @@ namespace UniVue.UI
         public void HideViewComponent<T>() where T : BaseComponent
         {
             foreach (BaseComponent component in Components)
+            {
                 if (component is T)
                     component.Hide();
+            }
         }
 
         /// <summary>
@@ -323,8 +341,10 @@ namespace UniVue.UI
         public T GetViewComponent<T>(string componentName) where T : BaseComponent
         {
             foreach (BaseComponent component in Components)
+            {
                 if (component.Name == componentName && component is T componentT)
                     return componentT;
+            }
 
             return null;
         }
@@ -340,11 +360,13 @@ namespace UniVue.UI
         {
             componentT = null;
             foreach (BaseComponent component in Components)
+            {
                 if (component.Name == componentName && component is T t)
                 {
                     componentT = t;
                     return true;
                 }
+            }
 
             return false;
         }
@@ -357,8 +379,10 @@ namespace UniVue.UI
         public T GetViewComponent<T>() where T : BaseComponent
         {
             foreach (BaseComponent component in Components)
+            {
                 if (component is T componentT)
                     return componentT;
+            }
 
             return null;
         }
@@ -373,11 +397,13 @@ namespace UniVue.UI
             componentT = null;
 
             foreach (BaseComponent component in Components)
+            {
                 if (component is T t)
                 {
                     componentT = t;
                     return true;
                 }
+            }
 
             return false;
         }
@@ -462,6 +488,7 @@ namespace UniVue.UI
         private void DoCreateInitialization(Transform parent, bool recordInitStatus)
         {
             foreach (Transform child in parent)
+            {
                 if (child.TryGetComponent(out BaseUI ui))
                 {
                     if (recordInitStatus)
@@ -487,6 +514,7 @@ namespace UniVue.UI
                 {
                     DoCreateInitialization(child, recordInitStatus);
                 }
+            }
         }
 
         protected sealed override void OnDispose()
@@ -512,9 +540,7 @@ namespace UniVue.UI
         /// <summary>
         /// 初始化回调
         /// </summary>
-        protected virtual void OnInit()
-        {
-        }
+        protected virtual void OnInit() { }
 
         /// <summary>
         /// 界面被打开时回调
@@ -535,9 +561,7 @@ namespace UniVue.UI
         /// <summary>
         /// 界面被销毁时回调
         /// </summary>
-        protected virtual void OnRelease()
-        {
-        }
+        protected virtual void OnRelease() { }
 
 #endregion
     }

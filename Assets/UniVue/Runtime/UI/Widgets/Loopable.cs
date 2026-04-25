@@ -19,9 +19,7 @@ namespace UniVue.UI.Widegts
     }
 
     [DontGenUICode(Code = UIGenCode.Property)]
-    public abstract class LoopItem : BaseComponent
-    {
-    }
+    public abstract class LoopItem : BaseComponent { }
 
     [RequireComponent(typeof(ScrollRect))]
     public abstract class Loopable : BaseComponent

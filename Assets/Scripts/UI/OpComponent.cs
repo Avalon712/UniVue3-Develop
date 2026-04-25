@@ -7,7 +7,7 @@ public sealed partial class OpComponent : BaseComponent
 {
     public void BindOp(OpCode opcode, Action<OpCode> codeExecutor)
     {
-        Bind(true, () => { TitleTxt.text = opcode.Name; });
+        Bind(opcode, () => { TitleTxt.text = opcode.Name; });
         ExeBtn.onClick.AddListener(() => codeExecutor.Invoke(opcode));
         CodeInput.onEndEdit.AddListener(code => opcode.Code = code);
     }

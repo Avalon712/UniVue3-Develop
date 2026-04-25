@@ -17,8 +17,8 @@ namespace UniVue.CodeGen
 
             bool modified = false;
             foreach (ModuleDefinition module in assemblyDefinition.Modules)
-                foreach (TypeDefinition type in module.Types)
-                    modified |= InjectType(module, type, diagnostics);
+            foreach (TypeDefinition type in module.Types)
+                modified |= InjectType(module, type, diagnostics);
 
             return modified;
         }
@@ -328,8 +328,10 @@ namespace UniVue.CodeGen
         private static int FindPreviousNonNopInstructionIndex(IList<Instruction> instructions, int startIndex)
         {
             for (int i = startIndex; i >= 0; i--)
+            {
                 if (instructions[i].OpCode != OpCodes.Nop)
                     return i;
+            }
 
             return -1;
         }
@@ -338,8 +340,10 @@ namespace UniVue.CodeGen
                                                           int endExclusive)
         {
             for (int i = startIndex; i < endExclusive; i++)
+            {
                 if (instructions[i].OpCode != OpCodes.Nop)
                     return i;
+            }
 
             return -1;
         }
@@ -348,8 +352,10 @@ namespace UniVue.CodeGen
                                                           int endExclusive)
         {
             for (int i = startIndex; i < endExclusive; i++)
+            {
                 if (IsStelemInstruction(instructions[i]))
                     return i;
+            }
 
             return -1;
         }
@@ -410,12 +416,14 @@ namespace UniVue.CodeGen
                     if (method.Parameters[0].ParameterType.MetadataType != MetadataType.Int32) continue;
                     bool byRefParamsMatched = true;
                     for (int i = 1; i < method.Parameters.Count; i++)
+                    {
                         if (method.Parameters[i].ParameterType is not ByReferenceType byRefType ||
                             !AreSameType(byRefType.ElementType, genericParameter))
                         {
                             byRefParamsMatched = false;
                             break;
                         }
+                    }
 
                     if (!byRefParamsMatched) continue;
                 }

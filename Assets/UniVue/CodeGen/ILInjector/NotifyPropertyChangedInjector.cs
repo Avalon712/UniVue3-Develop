@@ -15,8 +15,8 @@ namespace UniVue.CodeGen
             if (assemblyDefinition == null) return false;
 
             foreach (ModuleDefinition module in assemblyDefinition.Modules)
-                foreach (TypeDefinition type in module.Types)
-                    modified |= InjectType(module, type);
+            foreach (TypeDefinition type in module.Types)
+                modified |= InjectType(module, type);
 
             return modified;
         }
@@ -28,8 +28,10 @@ namespace UniVue.CodeGen
             if (type == null) return false;
 
             if (IsSubclassOfBaseModel(type))
+            {
                 foreach (PropertyDefinition property in type.Properties)
                     modified |= InjectPropertySetter(module, type, property);
+            }
 
             foreach (TypeDefinition nestedType in type.NestedTypes) modified |= InjectType(module, nestedType);
 
@@ -72,8 +74,10 @@ namespace UniVue.CodeGen
             List<Instruction> returnInstructions = new();
 
             foreach (Instruction instruction in setter.Body.Instructions)
+            {
                 if (instruction.OpCode == OpCodes.Ret)
                     returnInstructions.Add(instruction);
+            }
 
             int valueArgIndex = setter.Parameters.Count;
             foreach (Instruction ret in returnInstructions)
@@ -108,10 +112,14 @@ namespace UniVue.CodeGen
                 if (resolved == null) break;
 
                 if (resolved.FullName == BaseModelFullName)
+                {
                     foreach (MethodDefinition method in resolved.Methods)
+                    {
                         if (method.Name == "CheckPropertyChanged" && method.HasGenericParameters &&
                             method.Parameters.Count == 3)
                             return method;
+                    }
+                }
 
                 current = resolved.BaseType;
             }

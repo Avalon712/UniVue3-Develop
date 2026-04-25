@@ -18,6 +18,6 @@ namespace UniVue.UI
         /// <summary>
         /// 当此类被作为其他类的属性时，不生成此属性
         /// </summary>
-        Property,
+        Property
     }
 }

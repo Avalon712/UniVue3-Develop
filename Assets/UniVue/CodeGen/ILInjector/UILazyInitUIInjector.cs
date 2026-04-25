@@ -28,8 +28,8 @@ namespace UniVue.CodeGen
 
             bool modified = false;
             foreach (ModuleDefinition module in assemblyDefinition.Modules)
-                foreach (TypeDefinition type in GetTopLevelAndNestedTypes(module))
-                    modified |= TryInjectType(module, type, diagnostics);
+            foreach (TypeDefinition type in GetTopLevelAndNestedTypes(module))
+                modified |= TryInjectType(module, type, diagnostics);
 
             return modified;
         }
@@ -56,7 +56,7 @@ namespace UniVue.CodeGen
         }
 
         private static bool TryInjectType(ModuleDefinition module, TypeDefinition type,
-            List<DiagnosticMessage> diagnostics)
+                                          List<DiagnosticMessage> diagnostics)
         {
             if (type == null) return false;
             if (type.IsInterface) return false;
@@ -72,7 +72,7 @@ namespace UniVue.CodeGen
         }
 
         private static bool TryInjectLazyProperty(ModuleDefinition module, TypeDefinition type,
-            PropertyDefinition property, List<DiagnosticMessage> diagnostics)
+                                                  PropertyDefinition property, List<DiagnosticMessage> diagnostics)
         {
             if (property == null || property.GetMethod == null) return false;
             if (!property.GetMethod.HasBody) return false;
@@ -87,7 +87,7 @@ namespace UniVue.CodeGen
             if (fieldDef == null)
             {
                 diagnostics.Add(CreateWarning(
-                    $"{type.FullName}.{property.Name}: 未找到自动属性后援字段，LazyInitUI 已跳过。"));
+                                              $"{type.FullName}.{property.Name}: 未找到自动属性后援字段，LazyInitUI 已跳过。"));
                 return false;
             }
 
@@ -107,7 +107,7 @@ namespace UniVue.CodeGen
             catch (Exception e)
             {
                 diagnostics.Add(CreateWarning(
-                    $"{type.FullName}.{property.Name}: LazyInitUI 注入失败: {e.Message}"));
+                                              $"{type.FullName}.{property.Name}: LazyInitUI 注入失败: {e.Message}"));
                 return false;
             }
 
@@ -200,7 +200,7 @@ namespace UniVue.CodeGen
             body.Optimize();
         }
 
-        /// <summary>非虚 / 未重写实例方法用 <see cref="OpCodes.Call"/>，否则 <see cref="OpCodes.Callvirt"/>。</summary>
+        /// <summary>非虚 / 未重写实例方法用 <see cref="OpCodes.Call" />，否则 <see cref="OpCodes.Callvirt" />。</summary>
         private static OpCode ChooseCallKind(MethodReference methodRef)
         {
             if (methodRef == null) return OpCodes.Call;
@@ -235,10 +235,13 @@ namespace UniVue.CodeGen
         {
             string expected = "<" + property.Name + ">k__BackingField";
             foreach (FieldDefinition f in type.Fields)
+            {
                 if (f.Name == expected)
                     return f;
+            }
 
-            if (property.GetMethod != null && property.GetMethod.HasBody && property.GetMethod.Body.Instructions != null)
+            if (property.GetMethod != null && property.GetMethod.HasBody &&
+                property.GetMethod.Body.Instructions != null)
             {
                 foreach (Instruction i in property.GetMethod.Body.Instructions)
                 {
@@ -254,17 +257,6 @@ namespace UniVue.CodeGen
             return null;
         }
 
-        private sealed class LazyInitReferences
-        {
-            public MethodReference get_UI;
-            public MethodReference findByPath;
-            public MethodReference get_name; // on UnityEngine.Object
-            public TypeReference GameObjectType;
-            public MethodReference string_Concat2;
-            public MethodReference get_TypeFromHandle;
-            public MethodReference getComponent_Type;
-        }
-
         private static bool TryResolveLazyInitReferences(
             ModuleDefinition module,
             out LazyInitReferences refs,
@@ -278,10 +270,13 @@ namespace UniVue.CodeGen
                 return false;
             }
 
-            MethodDefinition getUiM = baseUIt.Methods.FirstOrDefault(m => m.Name == "get_UI" && m.Parameters.Count == 0);
+            MethodDefinition getUiM =
+                baseUIt.Methods.FirstOrDefault(m => m.Name == "get_UI" && m.Parameters.Count == 0);
             MethodDefinition findPath = baseUIt.Methods.FirstOrDefault(m =>
-                m.Name == "FindByPath" && m.Parameters.Count == 1 &&
-                m.Parameters[0].ParameterType.FullName == StringTypeFullName);
+                                                                           m.Name == "FindByPath" &&
+                                                                           m.Parameters.Count == 1 &&
+                                                                           m.Parameters[0].ParameterType.FullName ==
+                                                                           StringTypeFullName);
             if (getUiM == null || findPath == null)
             {
                 diagnostics.Add(CreateWarning("LazyInitUI: BaseUI 上缺少 get_UI 或 FindByPath(string)，已跳过。"));
@@ -299,23 +294,33 @@ namespace UniVue.CodeGen
                 return false;
             }
 
-            MethodDefinition getNameM = objT.Methods.FirstOrDefault(m => m.Name == "get_name" && m.Parameters.Count == 0);
+            MethodDefinition getNameM =
+                objT.Methods.FirstOrDefault(m => m.Name == "get_name" && m.Parameters.Count == 0);
             MethodDefinition concatM = stringT.Methods.FirstOrDefault(m =>
-                m.Name == "Concat" && m.IsStatic && m.Parameters.Count == 2 &&
-                m.Parameters[0].ParameterType.FullName == StringTypeFullName &&
-                m.Parameters[1].ParameterType.FullName == StringTypeFullName);
+                                                                          m.Name == "Concat" && m.IsStatic &&
+                                                                          m.Parameters.Count == 2 &&
+                                                                          m.Parameters[0].ParameterType.FullName ==
+                                                                          StringTypeFullName &&
+                                                                          m.Parameters[1].ParameterType.FullName ==
+                                                                          StringTypeFullName);
             MethodDefinition gtfhM = typeT.Methods.FirstOrDefault(m =>
-                m.Name == "GetTypeFromHandle" && m.IsStatic && m.Parameters.Count == 1);
+                                                                      m.Name == "GetTypeFromHandle" && m.IsStatic &&
+                                                                      m.Parameters.Count == 1);
             // Unity: GameObject.GetComponent(Type)；部分版本在 Component 上
             MethodDefinition getCompM = goT != null
                 ? goT.Methods.FirstOrDefault(m =>
-                    m.Name == "GetComponent" && m.HasThis && m.Parameters.Count == 1 &&
-                    m.Parameters[0].ParameterType.FullName == SystemTypeTypeFullName)
+                                                 m.Name == "GetComponent" && m.HasThis && m.Parameters.Count == 1 &&
+                                                 m.Parameters[0].ParameterType.FullName == SystemTypeTypeFullName)
                 : null;
             if (getCompM == null && compT != null)
+            {
                 getCompM = compT.Methods.FirstOrDefault(m =>
-                    m.Name == "GetComponent" && m.HasThis && m.Parameters.Count == 1 &&
-                    m.Parameters[0].ParameterType.FullName == SystemTypeTypeFullName);
+                                                            m.Name == "GetComponent" && m.HasThis &&
+                                                            m.Parameters.Count == 1 &&
+                                                            m.Parameters[0].ParameterType.FullName ==
+                                                            SystemTypeTypeFullName);
+            }
+
             if (getNameM == null || concatM == null || gtfhM == null || getCompM == null)
             {
                 diagnostics.Add(CreateWarning("LazyInitUI: 未解析到 get_name/Concat/GetTypeFromHandle/GetComponent(Type)，已跳过。"));
@@ -336,7 +341,7 @@ namespace UniVue.CodeGen
         {
             TypeDefinition inModule = GetAllModuleTypes(module).FirstOrDefault(t => t.FullName == fullName);
             if (inModule != null) return inModule;
-            var resolver = module.AssemblyResolver;
+            IAssemblyResolver resolver = module.AssemblyResolver;
             if (module.AssemblyReferences is not null)
             {
                 foreach (AssemblyNameReference anr in module.AssemblyReferences)
@@ -345,7 +350,7 @@ namespace UniVue.CodeGen
                     {
                         AssemblyDefinition asm = resolver.Resolve(anr);
                         inModule = GetAllModuleTypes(asm.MainModule)
-                            .FirstOrDefault(t => t.FullName == fullName);
+                           .FirstOrDefault(t => t.FullName == fullName);
                         if (inModule != null) return inModule;
                     }
                     catch
@@ -394,7 +399,20 @@ namespace UniVue.CodeGen
             }
         }
 
-        private static DiagnosticMessage CreateWarning(string message) =>
-            new() { DiagnosticType = DiagnosticType.Warning, MessageData = message };
+        private static DiagnosticMessage CreateWarning(string message)
+        {
+            return new DiagnosticMessage { DiagnosticType = DiagnosticType.Warning, MessageData = message };
+        }
+
+        private sealed class LazyInitReferences
+        {
+            public MethodReference findByPath;
+            public TypeReference GameObjectType;
+            public MethodReference get_name; // on UnityEngine.Object
+            public MethodReference get_TypeFromHandle;
+            public MethodReference get_UI;
+            public MethodReference getComponent_Type;
+            public MethodReference string_Concat2;
+        }
     }
 }

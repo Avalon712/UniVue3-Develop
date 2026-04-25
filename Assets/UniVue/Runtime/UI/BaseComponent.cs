@@ -65,16 +65,12 @@ namespace UniVue.UI
         /// <summary>
         /// 组件可见时回调
         /// </summary>
-        protected virtual void OnShow()
-        {
-        }
+        protected virtual void OnShow() { }
 
         /// <summary>
         /// 组件隐藏时回调
         /// </summary>
-        protected virtual void OnHide()
-        {
-        }
+        protected virtual void OnHide() { }
 
 #endregion
     }

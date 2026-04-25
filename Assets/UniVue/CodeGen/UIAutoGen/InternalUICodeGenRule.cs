@@ -8,10 +8,6 @@ namespace UniVue.Editor
 {
     internal sealed class InternalUICodeGenRule : UICodeGenRule
     {
-        public override int Order => 0;
-
-        internal override int InternalRuleOrder { get; set; } = int.MinValue;
-
         private static readonly Dictionary<UGUIType, string> UGUITypeFullNameMap = new()
         {
             [UGUIType.Image] = "UnityEngine.UI.Image",
@@ -43,10 +39,10 @@ namespace UniVue.Editor
             [UGUIType.Selectable] = "UnityEngine.UI.Selectable",
             [UGUIType.TextMeshProUGUI] = "TMPro.TextMeshProUGUI",
             [UGUIType.TMP_InputField] = "TMPro.TMP_InputField",
-            [UGUIType.TMP_Dropdown] = "TMPro.TMP_Dropdown",
+            [UGUIType.TMP_Dropdown] = "TMPro.TMP_Dropdown"
         };
 
-        /// <summary>将 <see cref="UGUITypeFullNameMap"/> 中的脚本全名解析为 <see cref="Type"/>，避免重复反射。</summary>
+        /// <summary>将 <see cref="UGUITypeFullNameMap" /> 中的脚本全名解析为 <see cref="Type" />，避免重复反射。</summary>
         private static readonly Dictionary<string, Type> ResolvedComponentTypesByFullName = new();
 
         private static readonly HashSet<string> CSharpKeywords = new()
@@ -62,10 +58,14 @@ namespace UniVue.Editor
             "void", "volatile", "while"
         };
 
+        public override int Order => 0;
+
+        internal override int InternalRuleOrder { get; set; } = int.MinValue;
+
         protected override bool Filter(GameObject prefab, BaseUI baseUI)
         {
             if (baseUI is not BaseView && baseUI is not BaseComponent) return false;
-            var attr = (DontGenUICodeAttribute)
+            DontGenUICodeAttribute attr = (DontGenUICodeAttribute)
                 Attribute.GetCustomAttribute(baseUI.GetType(), typeof(DontGenUICodeAttribute));
             return attr is not { Code: UIGenCode.Class };
         }
@@ -122,11 +122,11 @@ namespace UniVue.Editor
         }
 
         /// <summary>
-        /// 按 <see cref="UniVueEditorSettings"/> 中 <c>uiTypes</c> / <c>typeSuffixes</c> 的顺序，
+        /// 按 <see cref="UniVueEditorSettings" /> 中 <c>uiTypes</c> / <c>typeSuffixes</c> 的顺序，
         /// 找到第一个「后缀匹配且该 GameObject 上真实存在对应 UI 组件」的映射，用于生成属性类型。
         /// </summary>
         private static bool TryResolveUguiPropertyType(GameObject go, string goName, UGUIType[] uiTypes,
-                                                     string[] suffixEntries, out string propertyTypeFullName)
+                                                       string[] suffixEntries, out string propertyTypeFullName)
         {
             propertyTypeFullName = null;
             if (!go || uiTypes == null || suffixEntries == null) return false;
@@ -183,7 +183,7 @@ namespace UniVue.Editor
 
         private static bool HasDontGenPropertyAttribute(Type type)
         {
-            var attr = (DontGenUICodeAttribute)
+            DontGenUICodeAttribute attr = (DontGenUICodeAttribute)
                 Attribute.GetCustomAttribute(type, typeof(DontGenUICodeAttribute));
             return attr is { Code: UIGenCode.Property };
         }
@@ -199,8 +199,11 @@ namespace UniVue.Editor
             if (CSharpKeywords.Contains(name)) return false;
             if (!char.IsLetter(name[0]) && name[0] != '_') return false;
             for (int i = 1; i < name.Length; i++)
+            {
                 if (!char.IsLetterOrDigit(name[i]) && name[i] != '_')
                     return false;
+            }
+
             return true;
         }
     }

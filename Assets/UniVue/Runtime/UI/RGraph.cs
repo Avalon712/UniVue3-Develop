@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UniVue.Internal;
 
 namespace UniVue.UI
 {
@@ -16,14 +15,14 @@ namespace UniVue.UI
         public static RGraph Create()
         {
             RNode g = RNode.Create();
-            RGraph graph = new RGraph(g);
+            RGraph graph = new(g);
             g.Key = graph;
             return graph;
         }
 
         internal void CollectRKeysNoneAlloc(RKeyType type, List<RKey> keys)
         {
-            if(g == null || keys == null || type == RKeyType.None) return;
+            if (g == null || keys == null || type == RKeyType.None) return;
             g.Visit(node =>
             {
                 if ((node.Key.type & type) == node.Key.type)
@@ -31,7 +30,7 @@ namespace UniVue.UI
                 return true;
             });
         }
-        
+
         public bool Equals(RGraph other)
         {
             return Equals(g, other.g);
@@ -44,7 +43,7 @@ namespace UniVue.UI
 
         public override int GetHashCode()
         {
-            return (g != null ? g.GetHashCode() : 0);
+            return g != null ? g.GetHashCode() : 0;
         }
     }
 }

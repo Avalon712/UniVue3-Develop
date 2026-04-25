@@ -174,6 +174,7 @@ namespace UniVue.UI
         public bool Equals(RKey other)
         {
             if (type == other.type)
+            {
                 switch (type)
                 {
                     case RKeyType.Graph: return As<RGraph>().Equals(other.As<RGraph>());
@@ -182,6 +183,7 @@ namespace UniVue.UI
                     case RKeyType.Property: return As<string>() == other.As<string>();
                     case RKeyType.Rendering: return As<Action>() == other.As<Action>();
                 }
+            }
 
             return false;
         }

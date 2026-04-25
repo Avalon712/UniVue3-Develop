@@ -2,7 +2,5 @@
 
 namespace UniVue.Model
 {
-    public sealed class ObserverCollection<TCollection, TItem> where TCollection : ICollection<TItem>
-    {
-    }
+    public sealed class ObserverCollection<TCollection, TItem> where TCollection : ICollection<TItem> { }
 }

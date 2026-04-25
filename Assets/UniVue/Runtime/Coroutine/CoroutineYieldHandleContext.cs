@@ -48,12 +48,14 @@ namespace UniVue.Coroutine
             _cacheHandlers ??= new Dictionary<Type, YieldHandler>();
 
             foreach (Type type in _handlers.Keys)
+            {
                 if (type.IsAssignableFrom(yieldType))
                 {
                     handler = _handlers[type];
                     _cacheHandlers.Add(yieldType, handler);
                     return handler;
                 }
+            }
 
             _cacheHandlers.Add(yieldType, null);
             return null;

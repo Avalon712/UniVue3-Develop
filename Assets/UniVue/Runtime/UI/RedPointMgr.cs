@@ -93,8 +93,10 @@ namespace UniVue.UI
                 yield return endOfFrame;
                 using InternalTempCollection<HashSet<ulong>, ulong> copyDirtyTree = new(_dirtyTrees);
                 foreach (ulong dirtyTree in copyDirtyTree)
+                {
                     if (_dirtyTrees.Remove(dirtyTree) && _trees.TryGetValue(dirtyTree, out RedPointNode root))
                         UpdateRedPointTree(root);
+                }
             }
         }
 
@@ -243,12 +245,14 @@ namespace UniVue.UI
             ushort maxRootVal = 0;
             bool isFound = false;
             for (uint i = 0; i <= RootMaxCount; i++)
+            {
                 if (!_allNodes.ContainsKey(i))
                 {
                     maxRootVal = (ushort)i;
                     isFound = true;
                     break;
                 }
+            }
 
             if (!isFound)
             {
@@ -440,8 +444,11 @@ namespace UniVue.UI
             if ((value & 0x0000FFFFFFFFFFFFUL) == 0) return 0;
             int depth = 0;
             for (int shift = 40; shift >= 0; shift -= 8)
+            {
                 if (((value >> shift) & 0xFF) != 0)
                     depth++;
+            }
+
             return depth;
         }
 

@@ -16,7 +16,7 @@ namespace UniVue.Editor
             UGUIType.Button, UGUIType.Toggle, UGUIType.Slider,
             UGUIType.Dropdown, UGUIType.InputField,
             UGUIType.TMP_InputField, UGUIType.TMP_Dropdown,
-            UGUIType.TextMeshProUGUI, UGUIType.ToggleGroup,
+            UGUIType.TextMeshProUGUI, UGUIType.ToggleGroup
         };
 
         private static readonly string[] DefaultTypeSuffixes =
@@ -32,11 +32,12 @@ namespace UniVue.Editor
             "Input,input",
             "Dropdown,dropdown",
             "Txt,Text,txt,text",
-            "ToggleGroup",
+            "ToggleGroup"
         };
 
-        private UniVueEditorSettings _settings;
         private Vector2 _scrollPos;
+
+        private UniVueEditorSettings _settings;
         private bool _typeSuffixFoldout = true;
 
         private void OnEnable()
@@ -68,8 +69,9 @@ namespace UniVue.Editor
             EditorGUILayout.Space(4);
 
             _settings.redPointKeyNamespace = EditorGUILayout.TextField(
-                new GUIContent("RedPointKey 命名空间", "RedPointKey.g.cs 的命名空间"),
-                _settings.redPointKeyNamespace ?? "");
+                                                                       new GUIContent("RedPointKey 命名空间",
+                                                                        "RedPointKey.g.cs 的命名空间"),
+                                                                       _settings.redPointKeyNamespace ?? "");
 
             EditorGUILayout.Space(4);
 
@@ -97,7 +99,7 @@ namespace UniVue.Editor
             _settings.typeSuffixes ??= Array.Empty<string>();
 
             int count = _settings.uiTypes.Length;
-            HashSet<UGUIType> usedTypes = new HashSet<UGUIType>(_settings.uiTypes);
+            HashSet<UGUIType> usedTypes = new(_settings.uiTypes);
             bool allUsed = usedTypes.Count >= AllUGUITypes.Length;
 
             EditorGUILayout.BeginHorizontal();
@@ -109,6 +111,7 @@ namespace UniVue.Editor
                 _settings.typeSuffixes = (string[])DefaultTypeSuffixes.Clone();
                 GUI.changed = true;
             }
+
             EditorGUI.BeginDisabledGroup(allUsed);
             if (GUILayout.Button("+", GUILayout.Width(24)))
             {
@@ -117,6 +120,7 @@ namespace UniVue.Editor
                 ArrayUtility.Add(ref _settings.typeSuffixes, "");
                 GUI.changed = true;
             }
+
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndHorizontal();
 
@@ -131,8 +135,8 @@ namespace UniVue.Editor
 
                 UGUIType current = _settings.uiTypes[i];
                 UGUIType[] available = AllUGUITypes
-                    .Where(t => t == current || !usedTypes.Contains(t))
-                    .ToArray();
+                                      .Where(t => t == current || !usedTypes.Contains(t))
+                                      .ToArray();
                 int selectedIdx = Array.IndexOf(available, current);
                 string[] displayNames = available.Select(t => t.ToString()).ToArray();
 
@@ -178,6 +182,7 @@ namespace UniVue.Editor
                     GUI.changed = true;
                 }
             }
+
             EditorGUILayout.EndHorizontal();
         }
     }

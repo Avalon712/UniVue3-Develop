@@ -2,9 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Scripting;
 using UniVue.Common;
 using UniVue.Coroutine;
 using UniVue.Event;
@@ -23,7 +21,7 @@ namespace UniVue.UI
     {
         private List<ulong> _coroutines;
         private bool _enable;
-        private RenderGraph _graph;
+        private RGraph _graph;
         private float _timer;
         private List<ulong> _timers;
         private CoroutineID _updateCoroutine;
@@ -47,17 +45,15 @@ namespace UniVue.UI
             get => !Disposed && _enable;
             set
             {
-                if (Disposed) return;
-                if (_enable == value) return;
+                if (Disposed || _enable == value) return;
                 _enable = value;
                 if (value)
                     CoroutineMgr.Resume(_updateCoroutine);
                 else
                     CoroutineMgr.Stop(_updateCoroutine);
-                if (_graph == null || _graph.Enable == value) return;
-                _graph.Enable = value;
                 if (value)
                     RefreshUI();
+                UIMgr.Renderer.SetEnable(_graph, value);
             }
         }
 
@@ -77,8 +73,7 @@ namespace UniVue.UI
         internal void OnDisposeInternal()
         {
             if (Disposed) return;
-            if (_graph != null)
-                UIMgr.Renderer.RemoveGraph(_graph);
+            UIMgr.Renderer.Remove(ref _graph);
             KillAllCoroutines();
             KillAllTimers();
             OnDispose();
@@ -133,8 +128,9 @@ namespace UniVue.UI
         /// <param name="force">是否强制刷新，即不管有无脏标记都重新渲染一遍（默认情况只有在当前UI的渲染状态处于Disable期间有渲染状态的变化时才会真正调用）</param>
         protected void RefreshUI(bool force = false)
         {
-            if (_graph == null) return;
-            _graph.RerenderIfDirty(force);
+            if (_graph.g == null) return;
+            CheckDisposedAndInitialized();
+            UIMgr.Renderer.RenderIfDirtyOrForce(_graph, force, true);
         }
 
         /// <summary>
@@ -143,10 +139,12 @@ namespace UniVue.UI
         /// <returns></returns>
         public IEnumerable<BaseModel> GetModels()
         {
-            if (_graph == null) yield break;
-            foreach (RenderGraph.Node node in _graph.EventOrModelNodes.Values)
-                if (node.Model != null)
-                    yield return node.Model;
+            if (_graph.g == null) yield break;
+            foreach (RKey key in _graph.g.next.Keys)
+            {
+                BaseModel model = key.As<BaseModel>();
+                if (model != null) yield return model;
+            }
         }
 
         /// <summary>
@@ -156,50 +154,96 @@ namespace UniVue.UI
         /// <returns></returns>
         public T GetModel<T>() where T : BaseModel
         {
-            if (_graph == null) return null;
-            foreach (RenderGraph.Node node in _graph.EventOrModelNodes.Values)
-                if (node.Model is T model)
-                    return model;
+            if (_graph.g == null) return null;
+            CheckDisposedAndInitialized();
+            foreach (BaseModel model in GetModels())
+            {
+                if (model is T modelT)
+                    return modelT;
+            }
+
             return null;
         }
 
         /// <summary>
-        /// 自动绑定渲染函数，会自动分析渲染函数中访问了哪些BaseModel
+        /// 判断当前UI是否存在绑定的指定模型
         /// </summary>
-        /// <param name="invokeOnBind">绑定时是否自动调用一次</param>
-        /// <param name="renderFunc">渲染函数，默认会在绑定时就自动调用一次</param>
-        [Preserve]
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        protected void Bind(bool invokeOnBind, Action renderFunc)
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public bool ContainsModel(BaseModel model)
         {
             CheckDisposedAndInitialized();
+            if (_graph.g == null) return false;
+            return _graph.g.next.ContainsKey(model);
         }
 
         /// <summary>
-        /// 自动绑定渲染函数，会自动分析渲染函数中访问了哪些BaseModel（绑定时不会立即调用一次）
+        /// 替换之前绑定的Model
         /// </summary>
-        /// <param name="renderFunc">渲染函数，默认会在绑定时就自动调用一次</param>
-        [Preserve]
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        protected void Bind(Action renderFunc)
+        /// <param name="oldModel"></param>
+        /// <param name="newModel"></param>
+        /// <typeparam name="T"></typeparam>
+        protected void Rebind<T>(T oldModel, T newModel) where T : BaseModel
         {
+            if (_graph.g == null) return;
             CheckDisposedAndInitialized();
+            ExceptionUtils.ThrowIfArgNull(oldModel, nameof(oldModel));
+            ExceptionUtils.ThrowIfArgNull(newModel, nameof(newModel));
+            ExceptionUtils.ThrowIfFalse(ContainsModel(oldModel), "当前UI不存在绑定的模型(oldModel)");
+            ExceptionUtils.ThrowIfTrue(ContainsModel(newModel), "当前UI已经绑定了模型(newModel)");
+            UIMgr.Renderer.Rebind(_graph, oldModel, newModel, Enable);
+            UIMgr.Renderer.SetDirty(_graph);
         }
 
         /// <summary>
         /// 绑定渲染函数
         /// </summary>
+        /// <param name="model">绑定的模型</param>
         /// <param name="renderFunc">渲染函数</param>
-        /// <param name="invokeOnBind">绑定时是否自动调用一次，默认为True</param>
-        /// <returns>渲染节点构建器</returns>
-        protected RenderNodeBuilder Bind(Action renderFunc, bool invokeOnBind = true)
+        protected void Bind(BaseModel model, Action renderFunc)
         {
             CheckDisposedAndInitialized();
+            ExceptionUtils.ThrowIfArgNull(model, nameof(model));
             ExceptionUtils.ThrowIfArgNull(renderFunc, nameof(renderFunc));
-            if (invokeOnBind)
-                renderFunc.Invoke();
-            _graph ??= RenderGraph.NewGraph();
-            return _graph.builder.On(renderFunc);
+            renderFunc.Invoke();
+            UIMgr.Renderer.AddNode(ref _graph, model, renderFunc);
+        }
+
+        /// <summary>
+        /// 绑定渲染函数
+        /// </summary>
+        /// <param name="model">绑定的模型</param>
+        /// <param name="renderFunc">渲染函数</param>
+        /// <param name="propertyNames">指定Model上要监听的属性</param>
+        [InternalParamsGCOptimization]
+        protected void Bind(BaseModel model, Action renderFunc, params string[] propertyNames)
+        {
+            CheckDisposedAndInitialized();
+            ExceptionUtils.ThrowIfArgNull(model, nameof(model));
+            ExceptionUtils.ThrowIfArgNull(renderFunc, nameof(renderFunc));
+            renderFunc.Invoke();
+            if (propertyNames == null || propertyNames.Length <= 0)
+                UIMgr.Renderer.AddNode(ref _graph, model, renderFunc);
+            else
+                UIMgr.Renderer.AddNode(ref _graph, model, renderFunc, propertyNames);
+        }
+
+        /// <summary>
+        /// 绑定渲染函数
+        /// </summary>
+        /// <param name="model">绑定的模型</param>
+        /// <param name="renderFunc">渲染函数</param>
+        /// <param name="propertyNames">指定Model上要监听的属性</param>
+        protected void Bind(BaseModel model, Action renderFunc, in Params<string> propertyNames)
+        {
+            CheckDisposedAndInitialized();
+            ExceptionUtils.ThrowIfArgNull(model, nameof(model));
+            ExceptionUtils.ThrowIfArgNull(renderFunc, nameof(renderFunc));
+            renderFunc.Invoke();
+            if (propertyNames.Length <= 0)
+                UIMgr.Renderer.AddNode(ref _graph, model, renderFunc);
+            else
+                UIMgr.Renderer.AddNode(ref _graph, model, renderFunc, propertyNames);
         }
 
         /// <summary>
@@ -212,8 +256,7 @@ namespace UniVue.UI
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfTrue(eventKey.Type == EventKeyType.NotEventKey, "无效的EventKey");
             ExceptionUtils.ThrowIfArgNull(renderFunc, nameof(renderFunc));
-            _graph ??= RenderGraph.NewGraph();
-            _graph.builder.On(renderFunc).On(eventKey).Build();
+            UIMgr.Renderer.AddNode(ref _graph, eventKey, renderFunc);
         }
 
         /// <summary>
@@ -227,8 +270,11 @@ namespace UniVue.UI
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfTrue(eventKeys == null || eventKeys.Length <= 0, "无效的EventKey");
             ExceptionUtils.ThrowIfArgNull(renderFunc, nameof(renderFunc));
-            _graph ??= RenderGraph.NewGraph();
-            _graph.builder.On(renderFunc).On(eventKeys).Build();
+            if (eventKeys == null || eventKeys.Length <= 0) return;
+            foreach (EventKey eventKey in eventKeys)
+            {
+                UIMgr.Renderer.AddNode(ref _graph, eventKey, renderFunc);
+            }
         }
 
         /// <summary>
@@ -241,20 +287,10 @@ namespace UniVue.UI
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfTrue(eventKeys.Length <= 0, "无效的EventKey");
             ExceptionUtils.ThrowIfArgNull(renderFunc, nameof(renderFunc));
-            _graph ??= RenderGraph.NewGraph();
-            _graph.builder.On(renderFunc).On(eventKeys).Build();
-        }
-
-        /// <summary>
-        /// 注销渲染函数
-        /// </summary>
-        /// <param name="renderFunc"></param>
-        protected void Unbind(Action renderFunc)
-        {
-            if (_graph == null) return;
-            CheckDisposedAndInitialized();
-            ExceptionUtils.ThrowIfArgNull(renderFunc, nameof(renderFunc));
-            _graph.Remove(renderFunc);
+            foreach (EventKey eventKey in eventKeys)
+            {
+                UIMgr.Renderer.AddNode(ref _graph, eventKey, renderFunc);
+            }
         }
 
         /// <summary>
@@ -263,10 +299,10 @@ namespace UniVue.UI
         /// <param name="model"></param>
         protected void Unbind(BaseModel model)
         {
-            if (_graph == null) return;
+            if (_graph.g == null) return;
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfArgNull(model, nameof(model));
-            _graph.Remove(model);
+            UIMgr.Renderer.Clear(ref _graph, model);
         }
 
         /// <summary>
@@ -276,12 +312,12 @@ namespace UniVue.UI
         [InternalParamsGCOptimization]
         protected void Unbind(params EventKey[] eventKeys)
         {
-            if (_graph == null || eventKeys.Length <= 0) return;
+            if (_graph.g == null || eventKeys.Length <= 0) return;
             CheckDisposedAndInitialized();
             foreach (EventKey eventKey in eventKeys)
             {
                 if (eventKey.Type == EventKeyType.NotEventKey) continue;
-                _graph.Remove(eventKey);
+                UIMgr.Renderer.Clear(ref _graph, eventKey);
             }
         }
 
@@ -291,12 +327,12 @@ namespace UniVue.UI
         /// <param name="eventKeys"></param>
         protected void Unbind(in Params<EventKey> eventKeys)
         {
-            if (_graph == null || eventKeys.Length <= 0) return;
+            if (_graph.g == null || eventKeys.Length <= 0) return;
             CheckDisposedAndInitialized();
             foreach (EventKey eventKey in eventKeys)
             {
                 if (eventKey.Type == EventKeyType.NotEventKey) continue;
-                _graph.Remove(eventKey);
+                UIMgr.Renderer.Clear(ref _graph, eventKey);
             }
         }
 
@@ -308,13 +344,13 @@ namespace UniVue.UI
         [InternalParamsGCOptimization]
         protected void Unbind(BaseModel model, params string[] propertyNames)
         {
-            if (_graph == null) return;
+            if (_graph.g == null) return;
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfArgNull(model, nameof(model));
             if (propertyNames == null || propertyNames.Length == 0)
-                _graph.Remove(model);
+                UIMgr.Renderer.Clear(ref _graph, model);
             else
-                _graph.Remove(model, propertyNames);
+                UIMgr.Renderer.Clear(ref _graph, model, propertyNames);
         }
 
         /// <summary>
@@ -324,13 +360,13 @@ namespace UniVue.UI
         /// <param name="propertyNames"></param>
         protected void Unbind(BaseModel model, in Params<string> propertyNames)
         {
-            if (_graph == null) return;
+            if (_graph.g == null) return;
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfArgNull(model, nameof(model));
             if (propertyNames.Length <= 0)
-                _graph.Remove(model);
+                UIMgr.Renderer.Clear(ref _graph, model);
             else
-                _graph.Remove(model, propertyNames);
+                UIMgr.Renderer.Clear(ref _graph, model, propertyNames);
         }
 
         /// <summary>
@@ -338,10 +374,9 @@ namespace UniVue.UI
         /// </summary>
         protected void UnbindAll()
         {
-            if (_graph == null) return;
+            if (_graph.g == null) return;
             CheckDisposedAndInitialized();
-            UIMgr.Renderer.RemoveGraph(_graph);
-            _graph = null;
+            UIMgr.Renderer.Remove(ref _graph);
         }
 
         /// <summary>
@@ -487,31 +522,23 @@ namespace UniVue.UI
         /// <summary>
         /// UI被创建成功时回调
         /// </summary>
-        protected virtual void OnCreate()
-        {
-        }
+        protected virtual void OnCreate() { }
 
         /// <summary>
         /// 每帧回调，需设置<see cref="enableUpdate" />为true
         /// </summary>
         /// <param name="deltaTime">帧生成时间，秒</param>
-        protected virtual void OnUpdate(in float deltaTime)
-        {
-        }
+        protected virtual void OnUpdate(in float deltaTime) { }
 
         /// <summary>
         /// 每秒调用，需设置<see cref="enableUpdatePerSecond" />为true
         /// </summary>
-        protected virtual void OnUpdatePerSecond()
-        {
-        }
+        protected virtual void OnUpdatePerSecond() { }
 
         /// <summary>
         /// UI被销毁时回调
         /// </summary>
-        protected virtual void OnDispose()
-        {
-        }
+        protected virtual void OnDispose() { }
 
 #endregion
     }

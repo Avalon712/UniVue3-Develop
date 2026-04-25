@@ -173,8 +173,11 @@ namespace UniVue.Coroutine
             HashSet<CoroutineRecorder> dependencies = dependency.dependencies;
             if (dependencies.Contains(coroutine)) return true;
             foreach (CoroutineRecorder recorder in dependencies)
+            {
                 if (ExistLoopDependency(coroutine, recorder))
                     return true;
+            }
+
             return false;
         }
 
@@ -250,8 +253,10 @@ namespace UniVue.Coroutine
                                                params CoroutineID[] dependencies)
         {
             if (dependencies != null && dependencies.Length > 0)
+            {
                 foreach (CoroutineID id in dependencies)
                     CombineDependency(coroutineId, id, checkLoopDependency);
+            }
         }
 
         /// <summary>

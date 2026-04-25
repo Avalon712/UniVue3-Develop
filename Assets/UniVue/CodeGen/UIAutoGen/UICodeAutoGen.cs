@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using UniVue.Editor;
 using UniVue.UI;
+using Object = UnityEngine.Object;
 
 namespace UniVue.CodeGen
 {
@@ -79,11 +80,11 @@ namespace UniVue.CodeGen
         {
             ManifestData manifest = LoadManifest();
             bool dirty = false;
-            foreach (UnityEngine.Object obj in Selection.objects)
+            foreach (Object obj in Selection.objects)
             {
                 string path = AssetDatabase.GetAssetPath(obj);
                 if (!PrefabAssetIsCodegenTarget(path)) continue;
-                dirty |= ProcessPrefab(path, manifest, forceRegenerate: true);
+                dirty |= ProcessPrefab(path, manifest, true);
             }
 
             if (dirty) SaveManifest(manifest);
@@ -105,9 +106,12 @@ namespace UniVue.CodeGen
         }
 
         [MenuItem("Assets/UniVue/CodeGen/Generate All UI Code", true, -49999)]
-        public static bool ValidateRegenerateAllUICodeFromAssetsMenu() => true;
+        public static bool ValidateRegenerateAllUICodeFromAssetsMenu()
+        {
+            return true;
+        }
 
-        #region Rule Discovery
+#region Rule Discovery
 
         private static List<UICodeGenRule> GetRules()
         {
@@ -116,8 +120,10 @@ namespace UniVue.CodeGen
             TypeCache.TypeCollection allTypes = TypeCache.GetTypesDerivedFrom<UICodeGenRule>();
             List<Type> concreteTypes = new();
             foreach (Type t in allTypes)
+            {
                 if (!t.IsAbstract)
                     concreteTypes.Add(t);
+            }
 
             _rules = new List<UICodeGenRule>();
             foreach (Type t in concreteTypes)
@@ -131,6 +137,7 @@ namespace UniVue.CodeGen
                         break;
                     }
                 }
+
                 if (isLeaf)
                     _rules.Add((UICodeGenRule)Activator.CreateInstance(t));
             }
@@ -139,12 +146,13 @@ namespace UniVue.CodeGen
             return _rules;
         }
 
-        #endregion
+#endregion
 
-        #region Prefab Processing
+#region Prefab Processing
 
         /// <summary>
-        /// 是否为 Project 中的预制体资源，且根节点上的 <see cref="BaseUI"/> 被至少一条代码生成规则接受（如 <see cref="BaseView"/> / <see cref="BaseComponent"/>）。
+        /// 是否为 Project 中的预制体资源，且根节点上的 <see cref="BaseUI" /> 被至少一条代码生成规则接受（如 <see cref="BaseView" /> / <see cref="BaseComponent" />
+        /// ）。
         /// </summary>
         private static bool PrefabAssetIsCodegenTarget(string prefabAssetPath)
         {
@@ -242,7 +250,7 @@ namespace UniVue.CodeGen
         }
 
         /// <summary>
-        /// 预制体已导入但根节点不再挂载 <see cref="BaseUI"/>（例如移除了 BaseView）时：
+        /// 预制体已导入但根节点不再挂载 <see cref="BaseUI" />（例如移除了 BaseView）时：
         /// 从清单中移除该预制体对应条目；若没有任何预制体仍关联同一脚本，则剥离该脚本中的自动生成区域。
         /// </summary>
         private static bool HandleImportedPrefabCodegenRootRemoved(string prefabPath, ManifestData manifest)
@@ -273,9 +281,9 @@ namespace UniVue.CodeGen
             return false;
         }
 
-        #endregion
+#endregion
 
-        #region Code Generation
+#region Code Generation
 
         private static string BuildPartialClass(string ns, string className, HashSet<GeneratedProperty> properties)
         {
@@ -315,7 +323,8 @@ namespace UniVue.CodeGen
         }
 
         /// <summary>
-        /// 将 <see cref="GeneratedProperty.path"/>（RootName/子路径…）转为不含根名的相对路径，以 <c>/</c> 开头，与 <see cref="LazyInitUIAttribute"/> 一致。
+        /// 将 <see cref="GeneratedProperty.path" />（RootName/子路径…）转为不含根名的相对路径，以 <c>/</c> 开头，与 <see cref="LazyInitUIAttribute" />
+        /// 一致。
         /// </summary>
         private static string FormatLazyInitUiRelativePath(string fullPath)
         {
@@ -329,9 +338,9 @@ namespace UniVue.CodeGen
         {
             if (string.IsNullOrEmpty(s)) return "";
             return s.Replace("\\", "\\\\", StringComparison.Ordinal)
-                .Replace("\"", "\\\"", StringComparison.Ordinal)
-                .Replace("\r", "\\r", StringComparison.Ordinal)
-                .Replace("\n", "\\n", StringComparison.Ordinal);
+                    .Replace("\"", "\\\"", StringComparison.Ordinal)
+                    .Replace("\r", "\\r", StringComparison.Ordinal)
+                    .Replace("\n", "\\n", StringComparison.Ordinal);
         }
 
         private static void StripAutoGenRegionFromFile(string scriptAssetPath)
@@ -358,9 +367,9 @@ namespace UniVue.CodeGen
             return string.IsNullOrEmpty(after) ? before : before + "\n\n" + after;
         }
 
-        #endregion
+#endregion
 
-        #region Manifest
+#region Manifest
 
         private static ManifestData LoadManifest()
         {
@@ -383,13 +392,17 @@ namespace UniVue.CodeGen
 
             StringBuilder sb = new();
             foreach (GeneratedProperty p in sorted)
-                sb.Append(p.propertyTypeFullName).Append(':').Append(p.propertyName).Append(':').Append(p.path).Append(';');
+                sb.Append(p.propertyTypeFullName).Append(':').Append(p.propertyName).Append(':').Append(p.path)
+                  .Append(';');
             using MD5 md5 = MD5.Create();
             return Convert.ToBase64String(md5.ComputeHash(Encoding.UTF8.GetBytes(sb.ToString())));
         }
 
         [Serializable]
-        private class ManifestData { public List<PrefabRecord> records = new(); }
+        private class ManifestData
+        {
+            public List<PrefabRecord> records = new();
+        }
 
         [Serializable]
         private class PrefabRecord
@@ -400,6 +413,6 @@ namespace UniVue.CodeGen
             public string fieldsHash;
         }
 
-        #endregion
+#endregion
     }
 }

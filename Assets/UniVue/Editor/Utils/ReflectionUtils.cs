@@ -19,8 +19,10 @@ namespace UniVue.Editor
             {
                 Type[] types = type.GenericTypeArguments;
                 if (types != null && types.Length == 1)
+                {
                     if (types[0].IsEnum && types[0].GetCustomAttribute<FlagsAttribute>() != null)
                         return true;
+                }
             }
 
             return false;

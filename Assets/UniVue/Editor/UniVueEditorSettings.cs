@@ -1,5 +1,4 @@
 using UnityEditor;
-using UnityEngine;
 
 namespace UniVue.Editor
 {
@@ -66,6 +65,6 @@ namespace UniVue.Editor
         // TextMeshPro
         TextMeshProUGUI,
         TMP_InputField,
-        TMP_Dropdown,
+        TMP_Dropdown
     }
 }

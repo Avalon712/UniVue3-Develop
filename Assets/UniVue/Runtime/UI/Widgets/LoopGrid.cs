@@ -47,6 +47,7 @@ namespace UniVue.UI.Widegts
             Transform content = _scrollRect.content;
             //按下面的方法确保contant的前面rows个为第一列或前cols个为第一行
             if (_direction == ScrollDirection.Vertical) //垂直滚动时位置按行一行一行的设置
+            {
                 for (int i = 0; i <= _rows; i++) //垂直滚动多一行
                 {
                     for (int j = 0; j < _cols; j++)
@@ -58,7 +59,9 @@ namespace UniVue.UI.Widegts
                     firstItemPos.y += _yDeltaPos; //下一行
                     firstItemPos.x -= _xDeltaPos * _cols;
                 }
+            }
             else //水平滚动时位置按列一列一列的设置
+            {
                 for (int i = 0; i <= _cols; ++i) //水平滚动多一列
                 {
                     for (int j = 0; j < _rows; ++j)
@@ -70,6 +73,7 @@ namespace UniVue.UI.Widegts
                     firstItemPos.x += _xDeltaPos; //下一列
                     firstItemPos.y -= _yDeltaPos * _rows;
                 }
+            }
         }
 
 #region Unity - 参数配置

@@ -81,8 +81,10 @@ namespace UniVue.Common
         public int IndexOf(T item)
         {
             for (int i = 0; i < Length; i++)
+            {
                 if (InternalEqualityComparer<T>.Comparer.Equals(this[i], item))
                     return i;
+            }
 
             return -1;
         }

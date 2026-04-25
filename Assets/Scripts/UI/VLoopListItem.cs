@@ -17,10 +17,12 @@ public sealed partial class VLoopListItem : LoopItem
 
     public void SetData(ItemData data)
     {
-        if (_data != null)
-            Unbind(_data);
+        ItemData old = _data;
         _data = data;
-        Bind(true, Refresh);
+        if (old != null)
+            Rebind(old, data);
+        else
+            Bind(data, Refresh);
     }
 
     private void Refresh()
