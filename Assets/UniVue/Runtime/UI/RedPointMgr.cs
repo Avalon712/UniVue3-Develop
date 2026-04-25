@@ -1,11 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Framwork.Utils;
 using UnityEngine;
 using UniVue.Common;
 using UniVue.Coroutine;
 using UniVue.Internal;
+using UniVue.Utils;
 
 namespace UniVue.UI
 {
@@ -91,7 +91,7 @@ namespace UniVue.UI
             while (true)
             {
                 yield return endOfFrame;
-                using InternalTempCollection<HashSet<ulong>, ulong> copyDirtyTree = new(_dirtyTrees); 
+                using InternalTempCollection<HashSet<ulong>, ulong> copyDirtyTree = new(_dirtyTrees);
                 foreach (ulong dirtyTree in copyDirtyTree)
                     if (_dirtyTrees.Remove(dirtyTree) && _trees.TryGetValue(dirtyTree, out RedPointNode root))
                         UpdateRedPointTree(root);
@@ -203,15 +203,17 @@ namespace UniVue.UI
         /// <returns></returns>
         public bool GetStatus(ulong key, bool rightNow = false)
         {
-            if (rightNow && _dirtyTrees.TryGetValue(GetRootKey(key), out ulong rootKey) && _trees.TryGetValue(rootKey, out RedPointNode root))
+            if (rightNow && _dirtyTrees.TryGetValue(GetRootKey(key), out ulong rootKey) &&
+                _trees.TryGetValue(rootKey, out RedPointNode root))
             {
                 _dirtyTrees.Remove(rootKey);
                 UpdateRedPointTree(root);
             }
+
             return _allNodes.TryGetValue(key, out RedPointNode node) && node.status;
         }
 
-        
+
         public bool IsDynamicDependency(ulong key)
         {
             return _dynamicRoots.Contains(GetRootKey(key));

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Framwork.Utils;
 using UniVue.Common;
 using UniVue.Internal;
+using UniVue.Utils;
 
 namespace UniVue.Event
 {
@@ -25,8 +25,8 @@ namespace UniVue.Event
         /// <summary>
         /// 当触发死循环链路时回调，参数为事件触发链路
         /// </summary>
-        public static event Action<IReadOnlyList<EventKey>> OnDeadLoop; 
-        
+        public static event Action<IReadOnlyList<EventKey>> OnDeadLoop;
+
         private static HashSet<EventCallback> GetCallbacks(in EventKey eventKey, bool createIfNotExist = true)
         {
             if (!_callbacks.TryGetValue(eventKey, out HashSet<EventCallback> callbacks) && createIfNotExist)
@@ -62,10 +62,11 @@ namespace UniVue.Event
                 _dispatchPaths.RemoveAt(_dispatchPaths.Count - 1);
                 return true;
             }
+
             _dispatchPaths.Add(eventKey);
             return false;
         }
-        
+
         /// <summary>
         /// 监听事件（默认的目标对象为委托的Target对象）
         /// </summary>
@@ -247,24 +248,23 @@ namespace UniVue.Event
         {
             if (eventKey.Type == EventKeyType.NotEventKey) return;
             HashSet<EventCallback> callbacks = GetCallbacks(eventKey, false);
-           
+
             if (callbacks != null)
             {
                 if (CheckDeadLoop(eventKey))
                     return;
-                
+
                 CurrentTriggeredEvent = eventKey;
-                
+
                 using InternalTempCollection<List<EventCallback>, EventCallback> tempCollection = new(callbacks);
                 foreach (EventCallback callback in tempCollection.Collection)
                     if (callbacks.Contains(callback) && callback.Invoke() && printLog)
                         PrintLog(eventKey, callback);
-                
+
                 OnEvent?.Invoke(eventKey);
                 _dispatchPaths.Clear();
                 CurrentTriggeredEvent = new EventKey();
             }
-
         }
 
 
@@ -283,19 +283,18 @@ namespace UniVue.Event
             {
                 if (CheckDeadLoop(eventKey))
                     return;
-                
+
                 CurrentTriggeredEvent = eventKey;
-                
+
                 using InternalTempCollection<List<EventCallback>, EventCallback> tempCollection = new(callbacks);
                 foreach (EventCallback callback in tempCollection.Collection)
                     if (callbacks.Contains(callback) && callback.Invoke(eventArg) && printLog)
                         PrintLog(eventKey, callback);
-                
+
                 OnEvent?.Invoke(eventKey);
                 _dispatchPaths.Clear();
                 CurrentTriggeredEvent = new EventKey();
             }
-
         }
     }
 }

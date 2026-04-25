@@ -2,7 +2,7 @@
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Framwork.Utils
+namespace UniVue.Utils
 {
     public static class GameObjectUtils
     {

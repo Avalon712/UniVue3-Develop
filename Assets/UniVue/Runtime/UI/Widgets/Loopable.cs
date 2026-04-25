@@ -1,7 +1,7 @@
 using System;
-using Framwork.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using UniVue.Utils;
 
 namespace UniVue.UI.Widegts
 {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Framwork.Utils;
 using UnityEngine;
 using UniVue.Common;
 using UniVue.Internal;
+using UniVue.Utils;
 
 namespace UniVue.UI
 {
@@ -59,6 +59,17 @@ namespace UniVue.UI
         /// <param name="callback">界面打开完成后回调</param>
         /// <param name="args"></param>
         /// <returns>true-打开成功 false-打开失败</returns>
+        public bool OpenChildView(string viewName)
+        {
+            return OpenChildView(viewName, Array.Empty<object>());
+        }
+
+        /// <summary>
+        /// 打开静态子界面，即在UI预制体中就已经包含了这个界面
+        /// </summary>
+        /// <param name="viewName"></param>
+        /// <param name="args"></param>
+        /// <returns>true-打开成功 false-打开失败</returns>
         public bool OpenChildView(string viewName, params object[] args)
         {
             CheckDisposedAndInitialized();
@@ -69,13 +80,25 @@ namespace UniVue.UI
             }
 
             foreach (BaseView childView in ChildViews)
-                if (childView.ViewName == viewName)
+                if (childView.ViewName == viewName && !childView.Status)
                 {
                     childView.OnOpenInternal(args);
                     return true;
                 }
 
             return false;
+        }
+
+        /// <summary>
+        /// 动态打开子界面，这个子界面是后面动态加载的（如果已经加载过这个类型的界面则不会再加载）
+        /// </summary>
+        /// <param name="mountNode">子界面的挂载点，如果为null，则挂载到UI节点</param>
+        /// <param name="callback">界面打开完成后回调（参数1-true打开成功 false-打开失败）</param>
+        /// <typeparam name="T">界面类型（GameObject身上没有时会自动挂载此脚本）</typeparam>
+        public void OpenChildView<T>(Transform mountNode = null, Action<bool> callback = null)
+            where T : BaseView
+        {
+            OpenChildView<T>(mountNode, callback, Array.Empty<object>());
         }
 
         /// <summary>
@@ -310,6 +333,7 @@ namespace UniVue.UI
         /// 获取指定名称的组件
         /// </summary>
         /// <param name="componentName"></param>
+        /// <param name="componentT"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public bool TryGetViewComponent<T>(string componentName, out T componentT) where T : BaseComponent

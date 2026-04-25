@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Framwork.Utils;
 using UnityEngine;
 using UniVue.Common;
-using UniVue.Internal;
 using UniVue.Timer;
+using UniVue.Utils;
 using Object = UnityEngine.Object;
 
 namespace UniVue.UI
@@ -134,7 +132,7 @@ namespace UniVue.UI
         {
             Open<T>(callback, Array.Empty<object>());
         }
-        
+
         /// <summary>
         /// 打开指定类型（界面名称为类型名称）
         /// </summary>
@@ -195,10 +193,11 @@ namespace UniVue.UI
                 BaseView newView = viewObj.GetComponent<T>();
                 if (!newView)
                     newView = viewObj.AddComponent<T>();
-                
+
                 newView.transform.SetParent(LayerMgr.GetLayerRoot(newView.Layer).transform);
-                GameObjectUtils.KeepTheSameWithPrefab(viewPrefab.transform as RectTransform, viewObj.transform as RectTransform);
-                
+                GameObjectUtils.KeepTheSameWithPrefab(viewPrefab.transform as RectTransform,
+                                                      viewObj.transform as RectTransform);
+
                 _openedViews[viewName] = newView;
                 viewObj.name = viewName;
                 newView.OnCreateInternal(viewObj);
@@ -217,7 +216,7 @@ namespace UniVue.UI
         {
             Open(viewName, callback, Array.Empty<object>());
         }
-        
+
         /// <summary>
         /// 打开指定名称的界面
         /// <para>这种方式必须保证预制体身上已经挂载了BaseView的脚本</para>
@@ -280,13 +279,14 @@ namespace UniVue.UI
                     if (_loadingViews.Remove(viewName, out callbacks)) callbacks?.Invoke(false);
                     return;
                 }
-                
+
                 GameObject viewObj = GameObjectUtils.RectTransformClone(viewPrefab, LayerMgr.HideLayer.transform);
                 BaseView newView = viewObj.GetComponent<BaseView>();
-                
+
                 newView.transform.SetParent(LayerMgr.GetLayerRoot(newView.Layer).transform);
-                GameObjectUtils.KeepTheSameWithPrefab(viewPrefab.transform as RectTransform, viewObj.transform as RectTransform);
-                
+                GameObjectUtils.KeepTheSameWithPrefab(viewPrefab.transform as RectTransform,
+                                                      viewObj.transform as RectTransform);
+
                 _openedViews[viewName] = newView;
                 viewObj.name = viewName;
                 newView.OnCreateInternal(viewObj);
@@ -294,7 +294,7 @@ namespace UniVue.UI
                 if (_loadingViews.Remove(viewName, out callbacks)) callbacks?.Invoke(true);
             });
         }
-        
+
         public static void Close(string viewName)
         {
             if (_openedViews.Remove(viewName, out BaseView view))
@@ -330,7 +330,7 @@ namespace UniVue.UI
                 callback?.Invoke(true, ui);
             });
         }
-        
+
         // /// <summary>
         // /// 从池中获取
         // /// </summary>
@@ -352,7 +352,7 @@ namespace UniVue.UI
         //         callback?.Invoke(true, ui);
         //     });
         // }
-        
+
         /// <summary>
         /// 创建UI
         /// <remarks>注意这种方式必须保证预制体身上有一个已经挂载的BaseUI脚本</remarks>
@@ -366,6 +366,7 @@ namespace UniVue.UI
                 callback?.Invoke(false, null);
                 return;
             }
+
             Loader.LoadUIPrefabAsync(uiName, uiPrefab =>
             {
                 if (!uiPrefab || !uiPrefab.GetComponent<BaseUI>())
@@ -373,6 +374,7 @@ namespace UniVue.UI
                     callback?.Invoke(false, null);
                     return;
                 }
+
                 GameObject uiObj = GameObjectUtils.RectTransformClone(uiPrefab, null);
                 callback?.Invoke(true, uiObj.GetComponent<BaseUI>());
             });
@@ -382,14 +384,14 @@ namespace UniVue.UI
         /// 销毁UI
         /// </summary>
         /// <param name="ui">要销毁的UI</param>
-        public static void DestroyUI(BaseUI ui) 
+        public static void DestroyUI(BaseUI ui)
         {
-            if (!ui)return;
+            if (!ui) return;
             GameObject uiObj = ui.UI;
             ui.OnDisposeInternal();
             Object.Destroy(uiObj);
         }
-        
+
         public static void Close<T>() where T : BaseView
         {
             Close(typeof(T).Name);

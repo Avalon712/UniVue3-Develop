@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Framwork.Utils;
 using UnityEngine;
 using UnityEngine.Scripting;
 using UniVue.Common;
@@ -12,6 +11,7 @@ using UniVue.Event;
 using UniVue.Internal;
 using UniVue.Model;
 using UniVue.Timer;
+using UniVue.Utils;
 
 namespace UniVue.UI
 {
