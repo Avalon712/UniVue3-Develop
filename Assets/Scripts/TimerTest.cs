@@ -28,6 +28,7 @@ public class TimerTest : MonoBehaviour
         yield return SafeRun(Test_Builder_FluentAPI());
         yield return SafeRun(Test_Builder_MultipleCallbacks());
         yield return SafeRun(Test_Kill_NonExistent());
+        yield return SafeRun(Test_Random1000_DelayAccuracy());
 
         Debug.Log($"========== 测试完成: {_passed} 通过, {_failed} 失败 ==========");
         UnityEngine.Assertions.Assert.IsTrue(_failed == 0, $"TimerMgr 功能测试失败: {_failed} 个用例未通过");
@@ -263,5 +264,41 @@ public class TimerTest : MonoBehaviour
 
         Assert(noException, "Test_Kill_NonExistent: Kill不存在的ID无异常");
         yield break;
+    }
+
+    // ================================================================
+    //  1000 个随机延时任务：回调时刻与期望间隔对比（毫秒），误差 ≤ 100ms 为通过
+    // ================================================================
+    IEnumerator Test_Random1000_DelayAccuracy()
+    {
+        Debug.Log("[Test] Test_Random1000_DelayAccuracy（约 30s+，请稍候）");
+        const int total = 1000;
+        const double toleranceMs = 100.0; // 0.1s
+        int completed = 0;
+        int timingFailures = 0;
+        var rnd = new System.Random();
+
+        for (int i = 0; i < total; i++)
+        {
+            float delaySec = (float)(rnd.NextDouble() * (30.0 - 0.5) + 0.5);
+            long createStamp = System.Diagnostics.Stopwatch.GetTimestamp();
+            TimerMgr.AddTimer(delaySec, 0f, 1, () =>
+            {
+                double elapsedMs = (System.Diagnostics.Stopwatch.GetTimestamp() - createStamp) * 1000.0 /
+                                   System.Diagnostics.Stopwatch.Frequency;
+                double expectedMs = delaySec * 1000.0;
+                if (Math.Abs(elapsedMs - expectedMs) > toleranceMs)
+                    timingFailures++;
+                completed++;
+            });
+        }
+
+        float waitStart = Time.realtimeSinceStartup;
+        yield return new WaitUntil(() => completed >= total || Time.realtimeSinceStartup - waitStart > 38f);
+
+        Assert(completed == total,
+            $"Test_Random1000_DelayAccuracy: 应完成 {total} 次回调（实际 {completed}）");
+        Assert(timingFailures == 0,
+            $"Test_Random1000_DelayAccuracy: 与期望延时的偏差应 ≤ {toleranceMs}ms（超标次数 {timingFailures}）");
     }
 }
