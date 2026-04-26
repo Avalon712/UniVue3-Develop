@@ -32,7 +32,7 @@ namespace UniVue.UI
         /// <param name="layerMgr">层级管理接口，如果为Null则使用默认的管理器</param>
         /// <param name="lazyDisposeInterval">每隔指定秒数执行一次对被关闭的界面的资源释放(一次释放一个界面)</param>
         public static void Initialize(Type redPointKeyEnumType, IUIPrefabLoader loader, IUILayerMgr layerMgr = null,
-                                      uint lazyDisposeInterval = 5)
+                                      uint lazyDisposeInterval = 30)
         {
             if (_initialized)
             {
@@ -56,7 +56,7 @@ namespace UniVue.UI
         /// <param name="loader">加载UI预制体</param>
         /// <param name="layerMgr">层级管理接口，如果为Null则使用默认的管理器</param>
         /// <param name="lazyDisposeInterval">每隔指定秒数执行一次对被关闭的界面的资源释放(一次释放一个界面)</param>
-        public static void Initialize(IUIPrefabLoader loader, IUILayerMgr layerMgr, uint lazyDisposeInterval = 5)
+        public static void Initialize(IUIPrefabLoader loader, IUILayerMgr layerMgr, uint lazyDisposeInterval = 30)
         {
             if (_initialized)
             {

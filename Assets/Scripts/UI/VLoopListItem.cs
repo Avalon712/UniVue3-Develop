@@ -1,6 +1,6 @@
 ﻿using TMPro;
 using UnityEngine.UI;
-using UniVue.UI.Widegts;
+using UniVue.UI.Widgets;
 
 public sealed partial class VLoopListItem : LoopItem
 {

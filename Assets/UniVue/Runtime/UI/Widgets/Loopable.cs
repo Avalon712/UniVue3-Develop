@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UniVue.Utils;
 
-namespace UniVue.UI.Widegts
+namespace UniVue.UI.Widgets
 {
     public enum ScrollDirection
     {

@@ -14,15 +14,15 @@ namespace UniVue.UI
         public const uint RootMaxCount = ushort.MaxValue;
         public const uint NotRootMaxCount = byte.MaxValue - 1;
 
-        private readonly Dictionary<ulong, RedPointNode> _allNodes = new(128);
+        private readonly Dictionary<ulong, RedPointNode> _allNodes = new(64);
         private readonly HashSet<ulong> _dirtyTrees = new(16);
 
         /// <summary>
         /// 动态创建的红点树，只存根节点的key
         /// </summary>
-        private readonly HashSet<ulong> _dynamicRoots = new(128);
+        private readonly HashSet<ulong> _dynamicRoots = new(64);
 
-        private readonly Dictionary<ulong, Action<bool>> _listeners = new(128);
+        private readonly Dictionary<ulong, Action<bool>> _listeners = new(64);
         private readonly Dictionary<ulong, bool> _recordForceStaus = new(32); //不根据内置激活规则设置的状态
 
         /// <summary>

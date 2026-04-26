@@ -14,10 +14,10 @@ public sealed partial class GMView : BaseView
 #region UniVue Auto-Generated — DO NOT MODIFY
 partial class GMView
 {
-    [global::UniVue.UI.LazyInitUIAttribute("/CloseViewOp")]
+    [UniVue.UI.LazyInitUI("/CloseViewOp")]
     public OpComponent CloseViewOp { get; }
 
-    [global::UniVue.UI.LazyInitUIAttribute("/OpenViewOp")]
+    [UniVue.UI.LazyInitUI("/OpenViewOp")]
     public OpComponent OpenViewOp { get; }
 }
 #endregion // UniVue Auto-Generated

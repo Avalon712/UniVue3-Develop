@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using static UnityEngine.UI.ScrollRect;
 
-namespace UniVue.UI.Widegts
+namespace UniVue.UI.Widgets
 {
     [AddComponentMenu("UniVue/UI Widgets/LoopList")]
     public sealed class LoopList : Loopable

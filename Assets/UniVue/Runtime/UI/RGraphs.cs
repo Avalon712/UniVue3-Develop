@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UniVue.Common;
 using UniVue.Coroutine;
 using UniVue.Event;
@@ -20,7 +21,6 @@ namespace UniVue.UI
         /// </summary>
         private readonly Dictionary<RNode, int> _disableGraphs = new();
 
-
         private readonly HashSet<RNode> _renderQueue = new(16);
         private CoroutineID _coroutineId;
 
@@ -37,13 +37,17 @@ namespace UniVue.UI
         /// </summary>
         public float RenderInternal { get; set; } = 0.1f;
 
+        public int WaitExecuteRenderingCount => _renderQueue.Count;
+
+        public int DisableGraphCount => _disableGraphs.Count;
+
         private IEnumerator Render()
         {
             while (true)
             {
                 yield return RenderInternal;
                 if (_renderQueue.Count == 0) continue;
-                
+
                 using InternalTempCollection<HashSet<RNode>, RNode> queue = new(_renderQueue);
                 _renderQueue.Clear();
 
@@ -114,7 +118,7 @@ namespace UniVue.UI
                                     if (!GetEnable(graph.Key.As<RGraph>()))
                                         _disableGraphs[graph] = 2;
                                     else
-                                        _renderQueue.Add(node.next[key]);
+                                        _renderQueue.Add(pNode.next[key]);
                                 }
                             }
                         }
@@ -153,10 +157,11 @@ namespace UniVue.UI
             return !_disableGraphs.ContainsKey(graph.g);
         }
 
-        internal void SetDirty(in RGraph graph)
+        internal bool TrySetDirty(in RGraph graph)
         {
-            if (graph.g == null || GetEnable(graph)) return;
+            if (graph.g == null || GetEnable(graph)) return false;
             _disableGraphs[graph.g] = 2;
+            return true;
         }
 
         internal void RenderIfDirtyOrForce(in RGraph graph, bool force, bool enable)
@@ -174,10 +179,14 @@ namespace UniVue.UI
             }
         }
 
-        internal void AddNode(ref RGraph graph, BaseModel model, Action renderFn)
+        [Conditional("UNITY_EDITOR")]
+        private void CheckDispose()
         {
             ExceptionUtils.ThrowIfNull(Entry.g, "RGraphs is disposed!");
-            if (model == null || renderFn == null) return;
+        }
+
+        private RNode GetModelNode(ref RGraph graph, BaseModel model)
+        {
             if (graph.g == null)
                 graph = RGraph.Create();
 
@@ -204,6 +213,15 @@ namespace UniVue.UI
                 graph.g.next[model] = mNode;
             }
 
+            return mNode;
+        }
+
+        internal void AddNode(ref RGraph graph, BaseModel model, Action renderFn)
+        {
+            CheckDispose();
+            if (model == null || renderFn == null) return;
+
+            RNode mNode = GetModelNode(ref graph, model);
             if (!mNode.next.TryGetValue(renderFn, out RNode rNode))
             {
                 rNode = RNode.Create();
@@ -215,7 +233,7 @@ namespace UniVue.UI
 
         internal void AddNode(ref RGraph graph, BaseModel model, Action renderFn, params string[] propertyNames)
         {
-            ExceptionUtils.ThrowIfNull(Entry.g, "RGraphs is disposed!");
+            CheckDispose();
             if (model == null || renderFn == null) return;
             if (graph.g == null)
                 graph = RGraph.Create();
@@ -226,29 +244,7 @@ namespace UniVue.UI
                 return;
             }
 
-            if (!Entry.g.next.TryGetValue(model, out RNode mGraphs))
-            {
-                mGraphs = RNode.Create();
-                Entry.g.next[model] = mGraphs;
-                mGraphs.Key = model;
-                mGraphs.In = 1;
-                model.OnPropertyChanged += OnNotifyPropertyChanged;
-            }
-
-            if (!mGraphs.next.ContainsKey(graph))
-            {
-                graph.g.In++;
-                mGraphs.next[graph] = graph.g;
-            }
-
-            if (!graph.g.next.TryGetValue(model, out RNode mNode))
-            {
-                mNode = RNode.Create();
-                mNode.Key = model;
-                mNode.In = 1;
-                graph.g.next[model] = mNode;
-            }
-
+            RNode mNode = GetModelNode(ref graph, model);
             foreach (string propertyName in propertyNames)
             {
                 if (!mNode.next.TryGetValue(propertyName, out RNode pNode))
@@ -272,7 +268,7 @@ namespace UniVue.UI
 
         internal void AddNode(ref RGraph graph, BaseModel model, Action renderFn, in Params<string> propertyNames)
         {
-            ExceptionUtils.ThrowIfNull(Entry.g, "RGraphs is disposed!");
+            CheckDispose();
             if (model == null || renderFn == null) return;
             if (graph.g == null)
                 graph = RGraph.Create();
@@ -283,29 +279,7 @@ namespace UniVue.UI
                 return;
             }
 
-            if (!Entry.g.next.TryGetValue(model, out RNode mGraphs))
-            {
-                mGraphs = RNode.Create();
-                Entry.g.next[model] = mGraphs;
-                mGraphs.Key = model;
-                mGraphs.In = 1;
-                model.OnPropertyChanged += OnNotifyPropertyChanged;
-            }
-
-            if (!mGraphs.next.ContainsKey(graph))
-            {
-                graph.g.In++;
-                mGraphs.next[graph] = graph.g;
-            }
-
-            if (!graph.g.next.TryGetValue(model, out RNode mNode))
-            {
-                mNode = RNode.Create();
-                mNode.Key = model;
-                mNode.In = 1;
-                graph.g.next[model] = mNode;
-            }
-
+            RNode mNode = GetModelNode(ref graph, model);
             foreach (string propertyName in propertyNames)
             {
                 if (!mNode.next.TryGetValue(propertyName, out RNode pNode))
@@ -329,7 +303,7 @@ namespace UniVue.UI
 
         internal void AddNode(ref RGraph graph, in EventKey eventKey, Action renderFn)
         {
-            ExceptionUtils.ThrowIfNull(Entry.g, "RGraphs is disposed!");
+            CheckDispose();
             if (eventKey.Type == EventKeyType.NotEventKey || renderFn == null) return;
             if (graph.g == null)
                 graph = RGraph.Create();
@@ -368,7 +342,7 @@ namespace UniVue.UI
 
         internal void Remove(ref RGraph graph)
         {
-            ExceptionUtils.ThrowIfNull(Entry.g, "RGraphs is disposed!");
+            CheckDispose();
             if (graph.g == null) return;
 
             _disableGraphs.Remove(graph.g);
@@ -424,7 +398,7 @@ namespace UniVue.UI
         /// </summary>
         public void ClearAll()
         {
-            ExceptionUtils.ThrowIfNull(Entry.g, "RGraphs is disposed!");
+            CheckDispose();
             foreach (RNode node in Entry.g.next.Values)
             {
                 if (node.Key.type == RKeyType.Model)
@@ -443,7 +417,7 @@ namespace UniVue.UI
         /// <param name="model"></param>
         public void Clear(BaseModel model)
         {
-            ExceptionUtils.ThrowIfNull(Entry.g, "RGraphs is disposed!");
+            CheckDispose();
             if (model == null || !Entry.g.next.Remove(model, out RNode mGraphs)) return;
 
             model.OnPropertyChanged -= OnNotifyPropertyChanged;
@@ -468,7 +442,7 @@ namespace UniVue.UI
         /// <param name="model"></param>
         public void Clear(ref RGraph graph, BaseModel model)
         {
-            ExceptionUtils.ThrowIfNull(Entry.g, "RGraphs is disposed!");
+            CheckDispose();
             if (graph.g == null || model == null) return;
             if (!Entry.g.next.TryGetValue(model, out RNode mGraphs)) return;
 
@@ -502,7 +476,7 @@ namespace UniVue.UI
         /// <param name="propertyNames">属性名称</param>
         public void Clear(ref RGraph graph, BaseModel model, params string[] propertyNames)
         {
-            ExceptionUtils.ThrowIfNull(Entry.g, "RGraphs is disposed!");
+            CheckDispose();
             if (graph.g == null || model == null) return;
             if (propertyNames == null || propertyNames.Length == 0)
             {
@@ -533,7 +507,7 @@ namespace UniVue.UI
         /// <param name="propertyNames">属性名称</param>
         public void Clear(ref RGraph graph, BaseModel model, in Params<string> propertyNames)
         {
-            ExceptionUtils.ThrowIfNull(Entry.g, "RGraphs is disposed!");
+            CheckDispose();
             if (graph.g == null || model == null) return;
             if (propertyNames.Length == 0)
             {
@@ -562,7 +536,7 @@ namespace UniVue.UI
         /// <param name="eventKey"></param>
         public void Clear(in EventKey eventKey)
         {
-            ExceptionUtils.ThrowIfNull(Entry.g, "RGraphs is disposed!");
+            CheckDispose();
             if (eventKey.Type == EventKeyType.NotEventKey || !Entry.g.next.Remove(eventKey, out RNode node)) return;
 
             foreach (RNode graph in node.next.Values)
@@ -585,7 +559,7 @@ namespace UniVue.UI
         /// <param name="eventKey"></param>
         public void Clear(ref RGraph graph, in EventKey eventKey)
         {
-            ExceptionUtils.ThrowIfNull(Entry.g, "RGraphs is disposed!");
+            CheckDispose();
             if (graph.g == null || eventKey.Type == EventKeyType.NotEventKey) return;
 
             if (!Entry.g.next.TryGetValue(eventKey, out RNode eGraphs)) return;
@@ -621,7 +595,7 @@ namespace UniVue.UI
         /// <typeparam name="T">BaseModel</typeparam>
         public void Rebind<T>(T oldModel, T newModel, bool refreshRightNow = true) where T : BaseModel
         {
-            if (oldModel == null || newModel == null) return;
+            if (oldModel == null || newModel == null || oldModel == newModel) return;
             if (!Entry.g.next.TryGetValue(newModel, out RNode newGraphs))
             {
                 newGraphs = RNode.Create();
@@ -664,7 +638,7 @@ namespace UniVue.UI
         /// <typeparam name="T">BaseModel</typeparam>
         public void Rebind<T>(in RGraph graph, T oldModel, T newModel, bool refreshRightNow = true) where T : BaseModel
         {
-            if (graph.g == null || oldModel == null || newModel == null) return;
+            if (graph.g == null || oldModel == null || newModel == null || oldModel == newModel) return;
             if (!graph.g.next.ContainsKey(oldModel) || graph.g.next.ContainsKey(newModel)) return;
             if (!graph.g.next.Remove(oldModel, out RNode mNode)) return;
 

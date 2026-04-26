@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UniVue.UI.Widegts
+namespace UniVue.UI.Widgets
 {
     [AddComponentMenu("UniVue/UI Widgets/LoopGrid")]
     public sealed class LoopGrid : Loopable

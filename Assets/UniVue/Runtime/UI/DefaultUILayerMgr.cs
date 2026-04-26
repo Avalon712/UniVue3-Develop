@@ -12,8 +12,16 @@ namespace UniVue.UI
     {
         private readonly List<Transform> _layers = new(8);
 
+#if UNITY_EDITOR
+        private DrivenRectTransformTracker _tracker;
+#endif
+
         private DefaultUILayerMgr()
         {
+#if UNITY_EDITOR
+            _tracker = new DrivenRectTransformTracker();
+#endif
+
             Canvas canvas = Object.FindObjectOfType<Canvas>(true);
             if (!canvas)
                 throw new NullReferenceException("Canvas not found！默认的UILayerMgr的实现中，场景里应该存在一个主Canvas作为LayerMgr的根节点");
@@ -80,7 +88,9 @@ namespace UniVue.UI
             newLayer.rotation = Quaternion.identity;
             newLayer.localPosition = Vector3.zero;
             newLayer.sizeDelta = (canvas.transform as RectTransform).sizeDelta;
-
+#if UNITY_EDITOR
+            _tracker.Add(canvas, newLayer, DrivenTransformProperties.All);
+#endif
             _layers.Add(newLayer);
 
             _layers.Sort((l1, l2) => string.Compare(l1.name, l2.name, StringComparison.Ordinal));

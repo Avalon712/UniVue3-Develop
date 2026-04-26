@@ -180,8 +180,8 @@ namespace UniVue.UI
         /// <summary>
         /// 替换之前绑定的Model
         /// </summary>
-        /// <param name="oldModel"></param>
-        /// <param name="newModel"></param>
+        /// <param name="oldModel">之前绑定的旧数据</param>
+        /// <param name="newModel">未绑定过的新数据</param>
         /// <typeparam name="T"></typeparam>
         protected void Rebind<T>(T oldModel, T newModel) where T : BaseModel
         {
@@ -191,8 +191,9 @@ namespace UniVue.UI
             ExceptionUtils.ThrowIfArgNull(newModel, nameof(newModel));
             ExceptionUtils.ThrowIfFalse(ContainsModel(oldModel), "当前UI不存在绑定的模型(oldModel)");
             ExceptionUtils.ThrowIfTrue(ContainsModel(newModel), "当前UI已经绑定了模型(newModel)");
+            ExceptionUtils.ThrowIfTrue(oldModel == newModel, "oldModel不能与newModel想等");
             UIMgr.Renderer.Rebind(_graph, oldModel, newModel, Enable);
-            UIMgr.Renderer.SetDirty(_graph);
+            UIMgr.Renderer.TrySetDirty(_graph);
         }
 
         /// <summary>
