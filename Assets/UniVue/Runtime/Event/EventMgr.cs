@@ -19,6 +19,7 @@ namespace UniVue.Event
 
         /// <summary>
         /// 任意事件被触发时都会回调此函数，此函数总是在最后被执行
+        /// <remarks>派发Dispatch的事件EventKey必须要有至少一个合法的监听回调时OnEvent才会被执行</remarks>
         /// </summary>
         public static event Action<EventKey> OnEvent;
 

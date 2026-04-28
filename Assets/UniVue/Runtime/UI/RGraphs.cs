@@ -23,7 +23,7 @@ namespace UniVue.UI
 
         private readonly HashSet<RNode> _renderQueue = new(16);
         private CoroutineID _coroutineId;
-
+        
         public RGraphs()
         {
             Entry = RGraph.Create();
@@ -41,6 +41,22 @@ namespace UniVue.UI
 
         public int DisableGraphCount => _disableGraphs.Count;
 
+        /// <summary>
+        /// 销毁所有渲染绑定，同时RGraphs不可再用
+        /// </summary>
+        internal void Dispose()
+        {
+            if (Entry.g == null) return;
+            _disableGraphs.Clear();
+            ClearAll();
+            RNode.ForceDispose(Entry.g);
+            Entry = default;
+            EventMgr.OnEvent -= OnTriggerEvent;
+            CoroutineMgr.Kill(_coroutineId);
+            _coroutineId = 0;
+            _renderQueue.Clear();
+        }
+
         private IEnumerator Render()
         {
             while (true)
@@ -56,7 +72,7 @@ namespace UniVue.UI
                     Action renderFn = rNode.Key.As<Action>();
                     if (rNode.Reachable && renderFn != null) renderFn.Invoke();
                 }
-
+                
                 //清空那些已经被释放的RGraph
                 queue.Collection.Clear();
                 foreach (RNode g in _disableGraphs.Keys)
@@ -375,22 +391,6 @@ namespace UniVue.UI
                     key.As<BaseModel>().OnPropertyChanged -= OnNotifyPropertyChanged;
                 RNode.ForceDispose(node);
             }
-        }
-
-        /// <summary>
-        /// 销毁所有渲染绑定，同时RGraphs不可再用
-        /// </summary>
-        internal void Dispose()
-        {
-            if (Entry.g == null) return;
-            _disableGraphs.Clear();
-            ClearAll();
-            RNode.ForceDispose(Entry.g);
-            Entry = default;
-            EventMgr.OnEvent -= OnTriggerEvent;
-            CoroutineMgr.Kill(_coroutineId);
-            _coroutineId = 0;
-            _renderQueue.Clear();
         }
 
         /// <summary>
