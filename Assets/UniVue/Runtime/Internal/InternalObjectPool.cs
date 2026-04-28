@@ -9,17 +9,18 @@ namespace UniVue.Internal
         private static readonly ConcurrentDictionary<Type, object> _pools = new();
         private readonly Func<T> _createFunc;
         private readonly Action<T> _disposeFunc;
-        private readonly Stack<T> _items = new(32);
-        private readonly HashSet<T> _itemsSet = new(InternalReferenceComparer<T>.Shared);
+        private readonly HashSet<T> _items = new(4, InternalReferenceComparer<T>.Shared);
 
         private uint _maxCapacity = uint.MaxValue;
 
         private InternalObjectPool() { }
 
-        public InternalObjectPool(Func<T> createFunc, Action<T> disposeFunc)
+        public InternalObjectPool(Func<T> createFunc, Action<T> disposeFunc, bool shared)
         {
             _createFunc = createFunc;
             _disposeFunc = disposeFunc;
+            if (shared)
+                _pools.TryAdd(typeof(T), this);
         }
 
         public int Count => _items.Count;
@@ -33,10 +34,22 @@ namespace UniVue.Internal
             set
             {
                 _maxCapacity = value;
-                while (Count > value) _itemsSet.Remove(_items.Pop());
+                while (Count > value)
+                    TryRemove(out _);
             }
         }
 
+        private bool TryRemove(out T item)
+        {
+            item = null;
+            foreach (T r in _items)
+            {
+                item = r;
+                break;
+            };
+            return item != null && _items.Remove(item);
+        }
+        
         public static InternalObjectPool<T> Shared
         {
             get
@@ -54,39 +67,16 @@ namespace UniVue.Internal
 
         public T Rent()
         {
-            if (_items.Count <= 0)
+            if (!TryRemove(out T item))
                 return _createFunc != null ? _createFunc.Invoke() : new T();
-
-            T item = _items.Pop();
-            _itemsSet.Remove(item);
             return item;
-        }
-
-        public T Rent(Func<T> createFunc)
-        {
-            if (_items.Count <= 0)
-                return createFunc != null ? createFunc.Invoke() : new T();
-
-            T item = _items.Pop();
-            _itemsSet.Remove(item);
-            return item;
-        }
-
-        public void Return(ref T item, Action<T> disposeFunc)
-        {
-            if (item == null) return;
-            disposeFunc?.Invoke(item);
-            if (Count >= MaxCapacity || !_itemsSet.Add(item)) return;
-            _items.Push(item);
-            item = null;
         }
 
         public void Return(ref T item)
         {
             if (item == null) return;
             _disposeFunc?.Invoke(item);
-            if (Count >= MaxCapacity || !_itemsSet.Add(item)) return;
-            _items.Push(item);
+            if (Count >= MaxCapacity || !_items.Add(item)) return;
             item = null;
         }
     }

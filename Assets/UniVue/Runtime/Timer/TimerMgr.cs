@@ -23,7 +23,7 @@ namespace UniVue.Timer
                 if (_timerTasks.Count > 0)
                 {
                     _waitTime += Time.deltaTime;
-                    if (_waitTime >= _timerHeap.Top())
+                    if (_waitTime >= _timerHeap.Peek())
                         UpdateWaitTime();
                 }
 
