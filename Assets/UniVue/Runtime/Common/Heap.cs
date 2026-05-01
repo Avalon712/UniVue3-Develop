@@ -60,7 +60,7 @@ namespace UniVue.Common
         {
             _items.Clear();
         }
-        
+
         public T Peek()
         {
             if (_items.Count == 0) throw new InvalidOperationException("Heap is empty.");

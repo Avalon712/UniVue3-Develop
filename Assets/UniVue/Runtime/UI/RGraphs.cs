@@ -23,7 +23,7 @@ namespace UniVue.UI
 
         private readonly HashSet<RNode> _renderQueue = new(16);
         private CoroutineID _coroutineId;
-        
+
         public RGraphs()
         {
             Entry = RGraph.Create();
@@ -72,7 +72,7 @@ namespace UniVue.UI
                     Action renderFn = rNode.Key.As<Action>();
                     if (rNode.Reachable && renderFn != null) renderFn.Invoke();
                 }
-                
+
                 //清空那些已经被释放的RGraph
                 queue.Collection.Clear();
                 foreach (RNode g in _disableGraphs.Keys)
@@ -93,18 +93,17 @@ namespace UniVue.UI
             {
                 graph.Visit(node =>
                 {
-                    if (node.Key.type == RKeyType.Event && node.Key.Equals(eventKey))
+                    if (node.Key.type != RKeyType.Event || !node.Key.Equals(eventKey))
+                        return node.Key.type == RKeyType.Event || node.Key.type == RKeyType.Graph;
+                    
+                    foreach (RKey key in node.next.Keys)
                     {
-                        foreach (RKey key in node.next.Keys)
-                        {
-                            if (key.type == RKeyType.Rendering && key.As<Action>() != null)
-                            {
-                                if (!GetEnable(graph.Key.As<RGraph>()))
-                                    _disableGraphs[graph] = 2;
-                                else
-                                    _renderQueue.Add(node.next[key]);
-                            }
-                        }
+                        if (key.type != RKeyType.Rendering || key.As<Action>() == null) continue;
+                        
+                        if (!GetEnable(graph.Key.As<RGraph>()))
+                            _disableGraphs[graph] = 2;
+                        else
+                            _renderQueue.Add(node.next[key]);
                     }
 
                     return node.Key.type == RKeyType.Event || node.Key.type == RKeyType.Graph;
@@ -123,32 +122,30 @@ namespace UniVue.UI
             {
                 graph.Visit(node =>
                 {
-                    if (node.Key.type == RKeyType.Model && node.Key.Equals(model))
+                    if (node.Key.type != RKeyType.Model || !node.Key.Equals(model))
+                        return node.Key.type == RKeyType.Model || node.Key.type == RKeyType.Graph;
+                    
+                    if (node.next.TryGetValue(propertyName, out RNode pNode))
                     {
-                        if (node.next.TryGetValue(propertyName, out RNode pNode))
+                        foreach (RKey key in pNode.next.Keys)
                         {
-                            foreach (RKey key in pNode.next.Keys)
-                            {
-                                if (key.type == RKeyType.Rendering && key.As<Action>() != null)
-                                {
-                                    if (!GetEnable(graph.Key.As<RGraph>()))
-                                        _disableGraphs[graph] = 2;
-                                    else
-                                        _renderQueue.Add(pNode.next[key]);
-                                }
-                            }
+                            if (key.type != RKeyType.Rendering || key.As<Action>() == null) continue;
+                            
+                            if (!GetEnable(graph.Key.As<RGraph>()))
+                                _disableGraphs[graph] = 2;
+                            else
+                                _renderQueue.Add(pNode.next[key]);
                         }
+                    }
 
-                        foreach (RKey key in node.next.Keys)
-                        {
-                            if (key.type == RKeyType.Rendering && key.As<Action>() != null)
-                            {
-                                if (!GetEnable(graph.Key.As<RGraph>()))
-                                    _disableGraphs[graph] = 2;
-                                else
-                                    _renderQueue.Add(node.next[key]);
-                            }
-                        }
+                    foreach (RKey key in node.next.Keys)
+                    {
+                        if (key.type != RKeyType.Rendering || key.As<Action>() == null) continue;
+                        
+                        if (!GetEnable(graph.Key.As<RGraph>()))
+                            _disableGraphs[graph] = 2;
+                        else
+                            _renderQueue.Add(node.next[key]);
                     }
 
                     return node.Key.type == RKeyType.Model || node.Key.type == RKeyType.Graph;

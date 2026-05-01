@@ -29,6 +29,8 @@ public sealed class ItemData : BaseModel
     public string Label { get; set; }
 
     public bool IsSelected { get; set; }
+    
+    public int Index { get; set; }
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY

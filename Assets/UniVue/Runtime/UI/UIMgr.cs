@@ -331,28 +331,6 @@ namespace UniVue.UI
             });
         }
 
-        // /// <summary>
-        // /// 从池中获取
-        // /// </summary>
-        // /// <param name="callback">创建完成后的回调，参数1-true-创建成功 false-创建失败  参数2-创建好的UI对象 </param>
-        // /// <typeparam name="T"></typeparam>
-        // public static void GetUIFromPool<T>(Action<bool, T> callback) where T : BaseUI
-        // {
-        //     Loader.LoadUIPrefabAsync(typeof(T), uiPrefab =>
-        //     {
-        //         if (!uiPrefab)
-        //         {
-        //             callback?.Invoke(false, null);
-        //             return;
-        //         }
-        //
-        //         GameObject uiObj = GameObjectUtils.RectTransformClone(uiPrefab, null);
-        //         if (!uiObj.TryGetComponent(out T ui))
-        //             ui = uiObj.AddComponent<T>();
-        //         callback?.Invoke(true, ui);
-        //     });
-        // }
-
         /// <summary>
         /// 创建UI
         /// <remarks>注意这种方式必须保证预制体身上有一个已经挂载的BaseUI脚本</remarks>

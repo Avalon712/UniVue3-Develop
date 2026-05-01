@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace UniVue.Editor
 {
@@ -56,25 +53,6 @@ namespace UniVue.Editor
         public static void InvokeMethod(object obj, string methodName, params object[] arguments)
         {
             obj.GetType().GetMethod(methodName, ACCESS).Invoke(obj, arguments);
-        }
-
-        /// <summary>
-        /// 深拷贝一个对象
-        /// </summary>
-        /// <param name="obj">要拷贝的对象</param>
-        /// <returns>拷贝后的对象</returns>
-        public static object DeepCopy(object obj)
-        {
-            object copy = null;
-            using (MemoryStream ms = new())
-            {
-                IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(ms, obj);
-                ms.Seek(0, SeekOrigin.Begin);
-                copy = formatter.Deserialize(ms);
-            }
-
-            return copy;
         }
     }
 }

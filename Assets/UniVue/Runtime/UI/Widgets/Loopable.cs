@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UniVue.Utils;
@@ -8,14 +9,14 @@ namespace UniVue.UI.Widgets
     public enum ScrollDirection
     {
         /// <summary>
-        /// 水平
-        /// </summary>
-        Horizontal,
-
-        /// <summary>
         /// 垂直
         /// </summary>
-        Vertical
+        Vertical,
+
+        /// <summary>
+        /// 水平
+        /// </summary>
+        Horizontal
     }
 
     [DontGenUICode(Code = UIGenCode.Property)]
@@ -24,7 +25,16 @@ namespace UniVue.UI.Widgets
     [RequireComponent(typeof(ScrollRect))]
     public abstract class Loopable : BaseComponent
     {
-        [SerializeField] protected ScrollDirection _direction;
+        [SerializeField]
+        protected ScrollDirection scrollDir;
+
+        [SerializeField]
+        protected Vector2 gap;
+
+        [SerializeField]
+        protected Vector2Int grid;
+
+        private LinkedList<RectTransform> _children;
 
         private int _dataCount;
 
@@ -48,7 +58,7 @@ namespace UniVue.UI.Widgets
 
         private Vector3[] _viewportCorners;
 
-        public ScrollRect ScrollRect
+        public ScrollRect Scroller
         {
             get
             {
@@ -57,20 +67,19 @@ namespace UniVue.UI.Widgets
             }
         }
 
-        public Scrollbar Scrollbar => _direction == ScrollDirection.Horizontal
-            ? ScrollRect.horizontalScrollbar
-            : ScrollRect.verticalScrollbar;
-
-        /// <summary>
-        /// 最大可见的Item的数量
-        /// </summary>
-        protected abstract int MaxViewCount { get; }
+        public Scrollbar Scrollbar => scrollDir == ScrollDirection.Horizontal
+            ? Scroller.horizontalScrollbar
+            : Scroller.verticalScrollbar;
 
         protected int FirstIndex => 0;
 
         protected abstract int LastIndex { get; }
 
-        public int ChildCount { get; private set; }
+        protected int ChildCount { get; private set; }
+
+        protected LinkedListNode<RectTransform> FirstChild => _children.First;
+
+        protected LinkedListNode<RectTransform> LastChild => _children.Last;
 
         /// <summary>
         /// 显示的数据的数量
@@ -87,57 +96,75 @@ namespace UniVue.UI.Widgets
 
         protected Action<int, LoopItem> OnItemRender { get; private set; }
 
+        protected Vector2 Distance { get; private set; }
+
         protected sealed override void OnCreate()
         {
             enableUpdate = true;
             _scrollRect = GetComponent<ScrollRect>();
 
+
             //防止BaseComponent的Show回调
             RectTransform content = _scrollRect.content;
             ChildCount = content.childCount;
             int childCount = ChildCount;
+            _children = new LinkedList<RectTransform>();
             for (int i = 0; i < childCount; i++)
-                content.GetChild(i).gameObject.SetActive(false);
+            {
+                Transform child = content.GetChild(i);
+                child.gameObject.SetActive(false);
+                _children.AddLast(child as RectTransform);
+            }
+
+            Distance = FirstChild.Value.sizeDelta * (gap / Vector2.Max(gap, Vector2.one)) + gap;
 
             //绑定滚动事件
             _itemCorners = new Vector3[4];
             _viewportCorners = new Vector3[4];
             _scrollRect.onValueChanged.AddListener(OnScroll);
             Scrollbar?.onValueChanged.AddListener(OnScroll);
+            Scroller.vertical = scrollDir == ScrollDirection.Vertical;
+            Scroller.horizontal = scrollDir == ScrollDirection.Horizontal;
             Count = 0;
         }
 
         protected override void OnUpdate(in float deltaTime)
         {
             if (!_isDirty) return;
-
             _scrollRect.viewport.GetWorldCorners(_viewportCorners);
-            if (_direction == ScrollDirection.Vertical)
+            int maxUpdateSteps = 30;
+            if (scrollDir == ScrollDirection.Vertical)
             {
-                (_scrollRect.content.GetChild(FirstIndex) as RectTransform).GetWorldCorners(_itemCorners);
-                if (_itemCorners[0].y > _viewportCorners[1].y)
+                while (_isDirty && maxUpdateSteps-- > 0)
                 {
-                    _isDirty = OnMoveItem(Direction.Up, _viewportCorners, _itemCorners);
-                }
-                else
-                {
-                    (_scrollRect.content.GetChild(LastIndex) as RectTransform).GetWorldCorners(_itemCorners);
-                    if (_itemCorners[0].y < _viewportCorners[0].y)
-                        _isDirty = OnMoveItem(Direction.Down, _viewportCorners, _itemCorners);
+                    GetChild(FirstIndex).Value.GetWorldCorners(_itemCorners);
+                    if (_itemCorners[0].y > _viewportCorners[1].y)
+                    {
+                        _isDirty = OnMoveItem(Direction.Up, _viewportCorners, _itemCorners);
+                    }
+                    else
+                    {
+                        GetChild(LastIndex).Value.GetWorldCorners(_itemCorners);
+                        if (_itemCorners[0].y < _viewportCorners[0].y)
+                            _isDirty = OnMoveItem(Direction.Down, _viewportCorners, _itemCorners);
+                    }
                 }
             }
             else
             {
-                (_scrollRect.content.GetChild(FirstIndex) as RectTransform).GetWorldCorners(_itemCorners);
-                if (_itemCorners[3].x < _viewportCorners[1].x)
+                while (_isDirty && maxUpdateSteps-- > 0)
                 {
-                    _isDirty = OnMoveItem(Direction.Left, _viewportCorners, _itemCorners);
-                }
-                else
-                {
-                    (_scrollRect.content.GetChild(LastIndex) as RectTransform).GetWorldCorners(_itemCorners);
-                    if (_itemCorners[3].x > _viewportCorners[3].x)
-                        _isDirty = OnMoveItem(Direction.Right, _viewportCorners, _itemCorners);
+                    GetChild(FirstIndex).Value.GetWorldCorners(_itemCorners);
+                    if (_itemCorners[3].x < _viewportCorners[1].x)
+                    {
+                        _isDirty = OnMoveItem(Direction.Left, _viewportCorners, _itemCorners);
+                    }
+                    else
+                    {
+                        GetChild(LastIndex).Value.GetWorldCorners(_itemCorners);
+                        if (_itemCorners[3].x > _viewportCorners[3].x)
+                            _isDirty = OnMoveItem(Direction.Right, _viewportCorners, _itemCorners);
+                    }
                 }
             }
         }
@@ -146,6 +173,7 @@ namespace UniVue.UI.Widgets
         {
             _scrollRect.onValueChanged.RemoveListener(OnScroll);
             Scrollbar?.onValueChanged.RemoveListener(OnScroll);
+            OnItemRender = null;
         }
 
         private void OnScroll(float value)
@@ -163,19 +191,18 @@ namespace UniVue.UI.Widgets
         /// </summary>
         protected void RefreshViewArea()
         {
-            Transform content = _scrollRect.content;
-            int len = content.childCount;
             int count = Count;
             _tail = _head;
-            for (int i = 0; i < len; i++)
+            
+            foreach (RectTransform child in _children)
             {
-                LoopItem item = content.GetChild(i).GetComponent<LoopItem>();
+                LoopItem item = child.GetComponent<LoopItem>();
                 if (_tail < count)
                     OnItemRender?.Invoke(_tail++, item);
                 else
                     item.Hide();
             }
-
+            
             --_tail;
         }
 
@@ -199,7 +226,7 @@ namespace UniVue.UI.Widgets
         protected void ForceRefresh()
         {
             _head = 0;
-            _scrollRect.normalizedPosition = _direction == ScrollDirection.Vertical ? Vector2.up : Vector2.zero;
+            _scrollRect.normalizedPosition = scrollDir == ScrollDirection.Vertical ? Vector2.up : Vector2.zero;
             ResetItemPos(Vector3.zero);
             RefreshViewArea();
         }
@@ -208,7 +235,45 @@ namespace UniVue.UI.Widgets
         /// 根据第一个Item的位置重新计算每个Item的位置
         /// </summary>
         /// <param name="firstItemPos">第一个Item的位置</param>
-        protected abstract void ResetItemPos(Vector2 firstItemPos);
+        protected void ResetItemPos(Vector2 firstItemPos)
+        {
+            int rows = grid.y;
+            int cols = grid.x;
+            Vector2 itemPos = firstItemPos;
+            Vector2 cellSize = FirstChild.Value.sizeDelta;
+            float xDeltaPos = cellSize.x + gap.x;
+            float yDeltaPos = cellSize.y + gap.y;
+
+            //按下面的方法确保content的前面rows个为第一列或前cols个为第一行
+            if (scrollDir == ScrollDirection.Vertical) //垂直滚动时位置按行一行一行的设置
+            {
+                for (int i = 0; i < rows; i++)
+                {
+                    for (int j = 0; j < cols; j++)
+                    {
+                        GetChild(i * cols + j).Value.anchoredPosition = itemPos;
+                        itemPos.x += xDeltaPos;
+                    }
+
+                    itemPos.y -= yDeltaPos; //下一行
+                    itemPos.x -= xDeltaPos * cols;
+                }
+            }
+            else //水平滚动时位置按列一列一列的设置
+            {
+                for (int i = 0; i < cols; ++i)
+                {
+                    for (int j = 0; j < rows; ++j)
+                    {
+                        GetChild(i * rows + j).Value.anchoredPosition = itemPos;
+                        itemPos.y -= yDeltaPos;
+                    }
+
+                    itemPos.x += xDeltaPos; //下一列
+                    itemPos.y += yDeltaPos * rows;
+                }
+            }
+        }
 
         /// <summary>
         /// 刷新视图
@@ -219,9 +284,63 @@ namespace UniVue.UI.Widgets
         /// <summary>
         /// 重新计算ScrollRect的内容区域大小
         /// </summary>
-        protected abstract void Resize();
+        protected virtual void Resize()
+        {
+            Vector3 deltaPos = Distance;
+            float temp = scrollDir == ScrollDirection.Vertical ? Count / (float)grid.x : Count / (float)grid.y;
+            _scrollRect.content.sizeDelta = (Mathf.FloorToInt(temp) + 1) * deltaPos;
 
+            //当前是否可以移动
+            _scrollRect.movementType = Count <= gap.x * gap.y
+                ? ScrollRect.MovementType.Clamped
+                : ScrollRect.MovementType.Elastic;
+        }
+
+        /// <summary>
+        /// 移动Item的位置
+        /// </summary>
+        /// <param name="direction">当前滚动方向</param>
+        /// <param name="viewportCorners">可见区域的四个角的世界坐标</param>
+        /// <param name="itemCorners">当前被移动的Item的四个角的世界坐标</param>
+        /// <returns>true-还需继续移动 false-无需再移动</returns>
         protected abstract bool OnMoveItem(Direction direction, Vector3[] viewportCorners, Vector3[] itemCorners);
+
+        protected LinkedListNode<RectTransform> GetChild(int index)
+        {
+            if (index >= _children.Count / 2)
+            {
+                index = _children.Count - 1 - index;
+                LinkedListNode<RectTransform> node = _children.Last;
+                for (int i = 0; i < index; i++)
+                {
+                    node = node.Previous;
+                }
+                return node;
+            }
+            else
+            {
+                LinkedListNode<RectTransform> node = _children.First;
+                for (int i = 0; i < index; i++)
+                {
+                    node = node.Next;
+                }
+
+                return node;
+            }
+        }
+
+
+        protected void SetAsLastSibling(LinkedListNode<RectTransform> child)
+        {
+            _children.Remove(child);
+            _children.AddAfter(_children.Last, child);
+        }
+
+        protected void SetAsFirstSibling(LinkedListNode<RectTransform> child)
+        {
+            _children.Remove(child);
+            _children.AddBefore(_children.First, child);
+        }
 
         protected enum Direction
         {

@@ -9,7 +9,7 @@ namespace Game
         // Start is called before the first frame update
         private void Start()
         {
-            UIMgr.Initialize(new UIPrefabLoader(), DefaultUILayerMgr.Default);
+            UIMgr.Initialize(new UIPrefabLoader(), DefaultLayerMgr.Default);
             
             UIMgr.Open<GMView>();
         }

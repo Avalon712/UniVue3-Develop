@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UniVue.UI;
+using UniVue.UI.Widgets;
 
 public sealed partial class CommonView : BaseView
 {
@@ -11,12 +12,29 @@ public sealed partial class CommonView : BaseView
     protected override void OnInit()
     {
         enableUpdatePerSecond = true;
+        
+        for (int i = 0; i < 1000; i++) 
+            _items.Add(new ItemData { Label = $"Label {i}", IsSelected = i % 2 == 0 , Index = i});
+        
         //这里Add之后在OnOpen中去获取可能会获得为null，因为这里具有延时，调用不一定同步
         AddComponent<VLoopListComponent>(Container, (success, component) =>
         {
             if (!success) return;
-            for (int i = 0; i < 1000; i++) _items.Add(new ItemData { Label = $"Label {i}", IsSelected = i % 2 == 0 });
             component.SetData(_items);
+        });
+        
+        AddComponent<LoopGrid>("VLoopGridComponent", Container, (success, component) =>
+        {
+            if(!success) return;
+            component.BindItemRender<VLoopGridItem>((index, item) =>
+            {
+                if (_items[index].Index != index)
+                {
+                    print("绑定有问题");
+                }
+                item.SetData(_items[index]);
+            });
+            component.Count = _items.Count;
         });
     }
 
@@ -31,12 +49,20 @@ public sealed partial class CommonView : BaseView
 
     protected override void OnOpen()
     {
-        base.OnOpen();
         if (TryGetViewComponent(out VLoopListComponent component))
         {
             component.SetData(_items);
             component.Show();
         }
+        
+        if (TryGetViewComponent(out LoopGrid loopGrid))
+        {
+            loopGrid.Count = _items.Count;
+            loopGrid.Show();
+        }
+        
+        base.OnOpen();
+        RefreshUI(true);
     }
 }
 

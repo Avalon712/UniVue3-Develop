@@ -70,7 +70,7 @@ namespace UniVue.Editor
 
             _settings.redPointKeyNamespace = EditorGUILayout.TextField(
                                                                        new GUIContent("RedPointKey 命名空间",
-                                                                        "RedPointKey.g.cs 的命名空间"),
+                                                                            "RedPointKey.g.cs 的命名空间"),
                                                                        _settings.redPointKeyNamespace ?? "");
 
             EditorGUILayout.Space(4);

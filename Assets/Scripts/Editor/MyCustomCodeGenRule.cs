@@ -15,7 +15,7 @@ public sealed class MyCustomCodeGenRule : UICodeGenRule
 
     protected override bool TryGenProperties(Type clazz, GameObject go, HashSet<GeneratedProperty> properties)
     {
-        Foreach(go, (path, visitedGo) =>
+        Traverse(go, (path, visitedGo) =>
         {
             if (visitedGo.TryGetComponent(out BaseUI _)) return false;
             string name = visitedGo.name;

@@ -36,6 +36,11 @@ public partial class DebugView : BaseView
         Bind(_data, () => DataTxt.text = _data.ToString());
     }
 
+    protected override void OnOpen()
+    {
+        RefreshUI(true);
+    }
+
     protected override void OnUpdate(in float deltaTime)
     {
         ProfierTxt.text = $"Rendering Count: {UIMgr.Renderer.WaitExecuteRenderingCount}";

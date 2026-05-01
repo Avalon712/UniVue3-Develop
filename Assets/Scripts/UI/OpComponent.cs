@@ -7,9 +7,14 @@ public sealed partial class OpComponent : BaseComponent
 {
     public void BindOp(OpCode opcode, Action<OpCode> codeExecutor)
     {
-        Bind(opcode, () => { TitleTxt.text = opcode.Name; });
+        Bind(opcode, () => { TitleTxt.text = opcode.Name; })();
         ExeBtn.onClick.AddListener(() => codeExecutor.Invoke(opcode));
         CodeInput.onEndEdit.AddListener(code => opcode.Code = code);
+    }
+
+    protected override void OnShow()
+    {
+        RefreshUI(true);
     }
 
     public sealed class OpCode : BaseModel

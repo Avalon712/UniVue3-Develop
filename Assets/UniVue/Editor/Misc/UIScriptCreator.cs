@@ -110,8 +110,8 @@ namespace UniVue.Editor.Misc
 
         private static string BuildBaseViewClass(string className)
         {
-            return 
-$@"public partial class {className} : BaseView
+            return
+                $@"public partial class {className} : BaseView
 {{
     public override int Layer => 0; // 界面层级，数值越大越靠近屏幕前层
 
@@ -139,8 +139,8 @@ $@"public partial class {className} : BaseView
 
         private static string BuildBaseComponentClass(string className)
         {
-            return 
-$@"public partial class {className} : BaseComponent
+            return
+                $@"public partial class {className} : BaseComponent
 {{
     protected override void OnCreate()
     {{
@@ -168,8 +168,8 @@ $@"public partial class {className} : BaseComponent
 
         private static string BuildBaseUIClass(string className)
         {
-            return 
-$@"public class {className} : BaseUI
+            return
+                $@"public class {className} : BaseUI
 {{
     protected override void OnCreate()
     {{

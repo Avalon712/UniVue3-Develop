@@ -8,7 +8,7 @@ namespace UniVue.UI
     /// <summary>
     /// 将场景中的Canvas作为根节点，所有层级的渲染都使用此Canvas
     /// </summary>
-    public sealed class DefaultUILayerMgr : IUILayerMgr
+    public sealed class DefaultLayerMgr : IUILayerMgr
     {
         private readonly List<Transform> _layers = new(8);
 
@@ -16,7 +16,7 @@ namespace UniVue.UI
         private DrivenRectTransformTracker _tracker;
 #endif
 
-        private DefaultUILayerMgr()
+        private DefaultLayerMgr()
         {
 #if UNITY_EDITOR
             _tracker = new DrivenRectTransformTracker();
@@ -40,7 +40,7 @@ namespace UniVue.UI
             hideLayerTransform.localPosition = Vector3.zero;
         }
 
-        public static DefaultUILayerMgr Default { get; } = new();
+        public static DefaultLayerMgr Default { get; } = new();
 
         public string GetLayerName(int layer)
         {

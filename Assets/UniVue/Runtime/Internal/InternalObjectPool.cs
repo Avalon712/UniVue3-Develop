@@ -15,12 +15,10 @@ namespace UniVue.Internal
 
         private InternalObjectPool() { }
 
-        public InternalObjectPool(Func<T> createFunc, Action<T> disposeFunc, bool shared)
+        public InternalObjectPool(Func<T> createFunc, Action<T> disposeFunc)
         {
             _createFunc = createFunc;
             _disposeFunc = disposeFunc;
-            if (shared)
-                _pools.TryAdd(typeof(T), this);
         }
 
         public int Count => _items.Count;
@@ -39,17 +37,6 @@ namespace UniVue.Internal
             }
         }
 
-        private bool TryRemove(out T item)
-        {
-            item = null;
-            foreach (T r in _items)
-            {
-                item = r;
-                break;
-            };
-            return item != null && _items.Remove(item);
-        }
-        
         public static InternalObjectPool<T> Shared
         {
             get
@@ -63,6 +50,19 @@ namespace UniVue.Internal
 
                 return (InternalObjectPool<T>)poolObj;
             }
+        }
+
+        private bool TryRemove(out T item)
+        {
+            item = null;
+            foreach (T r in _items)
+            {
+                item = r;
+                break;
+            }
+
+            ;
+            return item != null && _items.Remove(item);
         }
 
         public T Rent()

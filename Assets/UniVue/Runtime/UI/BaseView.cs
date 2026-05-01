@@ -190,17 +190,29 @@ namespace UniVue.UI
         }
 
         /// <summary>
-        /// 动态添加组件
+        /// 动态添加组件（按照组件类型的名称(typeof(T).Name)加载UI预制体）
         /// </summary>
         /// <param name="mountNode">挂载点，这个挂载点必须属性当前UI节点</param>
         /// <param name="callback">回调，参数1-是否添加成功 参数2-被添加的组件</param>
         /// <typeparam name="T">组件类型，如果GameObject身上没有挂载此组件则会自动添加此组件</typeparam>
         public void AddComponent<T>(Transform mountNode = null, Action<bool, T> callback = null) where T : BaseComponent
         {
+            AddComponent(typeof(T).Name, mountNode, callback);
+        }
+
+        /// <summary>
+        /// 动态添加组件（按照指定的组件的名称(uiName)加载UI预制体）
+        /// </summary>
+        /// <param name="uiName">加载的预制体的名称</param>
+        /// <param name="mountNode">挂载点，这个挂载点必须属性当前UI节点</param>
+        /// <param name="callback">回调，参数1-是否添加成功 参数2-被添加的组件</param>
+        /// <typeparam name="T">组件类型，如果GameObject身上没有挂载此组件则会自动添加此组件</typeparam>
+        public void AddComponent<T>(string uiName, Transform mountNode = null, Action<bool, T> callback = null) where T : BaseComponent
+        {
             CheckDisposedAndInitialized();
             if (Disposed)
             {
-                LogUtil.Warn($"{ViewName}[{GetType().FullName}]已经被销毁!，无法打开添加组件{typeof(T).FullName}");
+                LogUtil.Warn($"{ViewName}[{GetType().FullName}]已经被销毁!，无法添加组件{typeof(T).FullName}");
                 callback?.Invoke(false, null);
                 return;
             }
@@ -226,7 +238,7 @@ namespace UniVue.UI
             }
 
             IUIPrefabLoader loader = UIMgr.Loader;
-            loader.LoadUIPrefabAsync(typeof(T), uiPrefab =>
+            loader.LoadUIPrefabAsync(uiName, uiPrefab =>
             {
                 if (!uiPrefab)
                 {
@@ -249,7 +261,7 @@ namespace UniVue.UI
                 callback?.Invoke(true, component);
             });
         }
-
+        
         /// <summary>
         /// 显示指定名称的组件
         /// <para>如果有多个同名的组件则都会被打开</para>

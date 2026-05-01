@@ -392,8 +392,11 @@ namespace UniVue.CodeGen
 
             StringBuilder sb = new();
             foreach (GeneratedProperty p in sorted)
+            {
                 sb.Append(p.propertyTypeFullName).Append(':').Append(p.propertyName).Append(':').Append(p.path)
                   .Append(';');
+            }
+
             using MD5 md5 = MD5.Create();
             return Convert.ToBase64String(md5.ComputeHash(Encoding.UTF8.GetBytes(sb.ToString())));
         }

@@ -22,7 +22,7 @@ public sealed partial class VLoopListItem : LoopItem
         if (old != null)
             Rebind(old, data);
         else
-            Bind(data, Refresh);
+            Bind(data, Refresh)(); //绑定时立即渲染一次
     }
 
     private void Refresh()

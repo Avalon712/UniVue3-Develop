@@ -63,18 +63,18 @@ namespace UniVue.Editor
         ///     <para>参数2：当前被访问的GameObject  </para>
         ///     <para>返回指：true-当前GameObject的后代被继续访问，false-不访问当前GameObject的后代</para>
         /// </param>
-        protected void Foreach(GameObject go, Func<string, GameObject, bool> visitor)
+        protected void Traverse(GameObject go, Func<string, GameObject, bool> visitor)
         {
             if (visitor == null || !go) return;
-            DoForeach(go.name, go.transform, visitor);
+            DoTraverse(go.name, go.transform, visitor);
         }
 
-        private void DoForeach(string parentPath, Transform parent, Func<string, GameObject, bool> visitor)
+        private void DoTraverse(string parentPath, Transform parent, Func<string, GameObject, bool> visitor)
         {
             foreach (Transform child in parent)
             {
                 string childPath = parentPath + "/" + child.name;
-                if (visitor.Invoke(childPath, child.gameObject)) DoForeach(childPath, child, visitor);
+                if (visitor.Invoke(childPath, child.gameObject)) DoTraverse(childPath, child, visitor);
             }
         }
     }

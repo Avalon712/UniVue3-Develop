@@ -185,13 +185,12 @@ namespace UniVue.UI
         /// <typeparam name="T"></typeparam>
         protected void Rebind<T>(T oldModel, T newModel) where T : BaseModel
         {
-            if (_graph.g == null) return;
+            if (_graph.g == null || oldModel == newModel) return;
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfArgNull(oldModel, nameof(oldModel));
             ExceptionUtils.ThrowIfArgNull(newModel, nameof(newModel));
             ExceptionUtils.ThrowIfFalse(ContainsModel(oldModel), "当前UI不存在绑定的模型(oldModel)");
             ExceptionUtils.ThrowIfTrue(ContainsModel(newModel), "当前UI已经绑定了模型(newModel)");
-            ExceptionUtils.ThrowIfTrue(oldModel == newModel, "oldModel不能与newModel想等");
             UIMgr.Renderer.Rebind(_graph, oldModel, newModel, Enable);
             UIMgr.Renderer.TrySetDirty(_graph);
         }
@@ -201,13 +200,14 @@ namespace UniVue.UI
         /// </summary>
         /// <param name="model">绑定的模型</param>
         /// <param name="renderFunc">渲染函数</param>
-        protected void Bind(BaseModel model, Action renderFunc)
+        /// <returns>绑定的渲染函数</returns>
+        protected Action Bind(BaseModel model, Action renderFunc)
         {
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfArgNull(model, nameof(model));
             ExceptionUtils.ThrowIfArgNull(renderFunc, nameof(renderFunc));
-            renderFunc.Invoke();
             UIMgr.Renderer.AddNode(ref _graph, model, renderFunc);
+            return renderFunc;
         }
 
         /// <summary>
@@ -216,17 +216,18 @@ namespace UniVue.UI
         /// <param name="model">绑定的模型</param>
         /// <param name="renderFunc">渲染函数</param>
         /// <param name="propertyNames">指定Model上要监听的属性</param>
+        /// <returns>绑定的渲染函数</returns>
         [InternalParamsGCOptimization]
-        protected void Bind(BaseModel model, Action renderFunc, params string[] propertyNames)
+        protected Action Bind(BaseModel model, Action renderFunc, params string[] propertyNames)
         {
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfArgNull(model, nameof(model));
             ExceptionUtils.ThrowIfArgNull(renderFunc, nameof(renderFunc));
-            renderFunc.Invoke();
             if (propertyNames == null || propertyNames.Length <= 0)
                 UIMgr.Renderer.AddNode(ref _graph, model, renderFunc);
             else
                 UIMgr.Renderer.AddNode(ref _graph, model, renderFunc, propertyNames);
+            return renderFunc;
         }
 
         /// <summary>
@@ -235,16 +236,17 @@ namespace UniVue.UI
         /// <param name="model">绑定的模型</param>
         /// <param name="renderFunc">渲染函数</param>
         /// <param name="propertyNames">指定Model上要监听的属性</param>
-        protected void Bind(BaseModel model, Action renderFunc, in Params<string> propertyNames)
+        /// <returns>绑定的渲染函数</returns>
+        protected Action Bind(BaseModel model, Action renderFunc, in Params<string> propertyNames)
         {
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfArgNull(model, nameof(model));
             ExceptionUtils.ThrowIfArgNull(renderFunc, nameof(renderFunc));
-            renderFunc.Invoke();
             if (propertyNames.Length <= 0)
                 UIMgr.Renderer.AddNode(ref _graph, model, renderFunc);
             else
                 UIMgr.Renderer.AddNode(ref _graph, model, renderFunc, propertyNames);
+            return renderFunc;
         }
 
         /// <summary>
@@ -252,12 +254,14 @@ namespace UniVue.UI
         /// </summary>
         /// <param name="eventKey"></param>
         /// <param name="renderFunc"></param>
-        protected void Bind(in EventKey eventKey, Action renderFunc)
+        /// <returns>绑定的渲染函数</returns>
+        protected Action Bind(in EventKey eventKey, Action renderFunc)
         {
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfTrue(eventKey.Type == EventKeyType.NotEventKey, "无效的EventKey");
             ExceptionUtils.ThrowIfArgNull(renderFunc, nameof(renderFunc));
             UIMgr.Renderer.AddNode(ref _graph, eventKey, renderFunc);
+            return renderFunc;
         }
 
         /// <summary>
@@ -265,17 +269,20 @@ namespace UniVue.UI
         /// </summary>
         /// <param name="eventKeys"></param>
         /// <param name="renderFunc"></param>
+        /// <returns>绑定的渲染函数</returns>
         [InternalParamsGCOptimization]
-        protected void Bind(Action renderFunc, params EventKey[] eventKeys)
+        protected Action Bind(Action renderFunc, params EventKey[] eventKeys)
         {
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfTrue(eventKeys == null || eventKeys.Length <= 0, "无效的EventKey");
             ExceptionUtils.ThrowIfArgNull(renderFunc, nameof(renderFunc));
-            if (eventKeys == null || eventKeys.Length <= 0) return;
+            if (eventKeys == null || eventKeys.Length <= 0) return renderFunc;
             foreach (EventKey eventKey in eventKeys)
             {
                 UIMgr.Renderer.AddNode(ref _graph, eventKey, renderFunc);
             }
+
+            return renderFunc;
         }
 
         /// <summary>
@@ -283,7 +290,8 @@ namespace UniVue.UI
         /// </summary>
         /// <param name="eventKeys"></param>
         /// <param name="renderFunc"></param>
-        protected void Bind(Action renderFunc, in Params<EventKey> eventKeys)
+        /// <returns>绑定的渲染函数</returns>
+        protected Action Bind(Action renderFunc, in Params<EventKey> eventKeys)
         {
             CheckDisposedAndInitialized();
             ExceptionUtils.ThrowIfTrue(eventKeys.Length <= 0, "无效的EventKey");
@@ -292,6 +300,8 @@ namespace UniVue.UI
             {
                 UIMgr.Renderer.AddNode(ref _graph, eventKey, renderFunc);
             }
+
+            return renderFunc;
         }
 
         /// <summary>
