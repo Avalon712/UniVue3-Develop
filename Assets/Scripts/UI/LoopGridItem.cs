@@ -1,7 +1,7 @@
 ﻿using UniVue.UI;
 using UniVue.UI.Widgets;
 
-public partial class VLoopGridItem : LoopItem
+public partial class LoopGridItem : LoopItem
 {
     private ItemData _data;
     
@@ -23,7 +23,7 @@ public partial class VLoopGridItem : LoopItem
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
-partial class VLoopGridItem
+partial class LoopGridItem
 {
     [UniVue.UI.LazyInitUI("/IndexTxt")]
     public TMPro.TextMeshProUGUI IndexTxt { get; }

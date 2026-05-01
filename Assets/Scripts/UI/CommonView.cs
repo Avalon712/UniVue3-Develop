@@ -16,25 +16,60 @@ public sealed partial class CommonView : BaseView
         for (int i = 0; i < 1000; i++) 
             _items.Add(new ItemData { Label = $"Label {i}", IsSelected = i % 2 == 0 , Index = i});
         
-        //这里Add之后在OnOpen中去获取可能会获得为null，因为这里具有延时，调用不一定同步
-        AddComponent<VLoopListComponent>(Container, (success, component) =>
+        OpComponent.BindOp(new OpComponent.OpCode(){Name = "Invoke Method"}, code =>
         {
-            if (!success) return;
-            component.SetData(_items);
-        });
-        
-        AddComponent<LoopGrid>("VLoopGridComponent", Container, (success, component) =>
-        {
-            if(!success) return;
-            component.BindItemRender<VLoopGridItem>((index, item) =>
+            if (code.Code == "VL")
             {
-                if (_items[index].Index != index)
+                //这里Add之后在OnOpen中去获取可能会获得为null，因为这里具有延时，调用不一定同步
+                AddComponent<VLoopListComponent>(Container, (success, component) =>
                 {
-                    print("绑定有问题");
-                }
-                item.SetData(_items[index]);
-            });
-            component.Count = _items.Count;
+                    if (!success) return;
+                    component.SetData(_items);
+                });
+            }
+
+            if (code.Code == "HL")
+            {
+                AddComponent<LoopList>("HLoopListComponent", Container, (success, component) =>
+                {
+                    if(!success) return;
+                    component.BindItemRender<HLoopListItem>((index, item) =>
+                    {
+                        item.SetData(_items[index]);
+                    });
+                    component.Count = _items.Count;
+                });
+            }
+
+            if (code.Code == "VG")
+            {
+                AddComponent<LoopGrid>("VLoopGridComponent", Container, (success, component) =>
+                {
+                    if(!success) return;
+                    component.BindItemRender<LoopGridItem>((index, item) =>
+                    {
+                        item.SetData(_items[index]);
+                    });
+                    component.Count = _items.Count;
+                });
+            }
+
+            if (code.Code == "HG")
+            {
+                AddComponent<LoopGrid>("HLoopGridComponent", Container, (success, component) =>
+                {
+                    if(!success) return;
+                    component.BindItemRender<LoopGridItem>((index, item) =>
+                    {
+                        if (_items[index].Index != index)
+                        {
+                            print("绑定有问题");
+                        }
+                        item.SetData(_items[index]);
+                    });
+                    component.Count = _items.Count;
+                });
+            }
         });
     }
 
@@ -54,11 +89,17 @@ public sealed partial class CommonView : BaseView
             component.SetData(_items);
             component.Show();
         }
-        
-        if (TryGetViewComponent(out LoopGrid loopGrid))
+
+        if (TryGetViewComponent(out LoopList loopList))
         {
-            loopGrid.Count = _items.Count;
-            loopGrid.Show();
+            loopList.Count = _items.Count;
+            loopList.Show();
+        }
+        
+        foreach (LoopGrid grid in GetViewComponents<LoopGrid>())
+        {
+            grid.Count = _items.Count;
+            grid.Show();
         }
         
         base.OnOpen();
@@ -74,5 +115,8 @@ partial class CommonView
 
     [UniVue.UI.LazyInitUI("/CloseBtnUI")]
     public CloseBtnUI CloseBtnUI { get; }
+
+    [UniVue.UI.LazyInitUI("/OpComponent")]
+    public OpComponent OpComponent { get; }
 }
 #endregion // UniVue Auto-Generated

@@ -186,6 +186,21 @@ namespace UniVue.Editor
             string name = target.GetType().Name;
             int index = 0;
 
+            if (direction == ScrollDirection.Vertical)
+            {
+                content.anchorMin = new Vector2(0, 1);
+                content.anchorMax = new Vector2(1, 1);
+                content.pivot = new Vector2(0.5f, 1);
+            }
+            else
+            {
+                content.anchorMin = new Vector2(0, 0);
+                content.anchorMax = new Vector2(0, 1);
+                content.pivot = new Vector2(0, 0.5f);
+            }
+
+            content.anchoredPosition = Vector2.zero;
+            
             foreach (RectTransform rectTransform in content)
             {
                 rectTransform.anchorMin = new Vector2(0, 1);
@@ -194,7 +209,10 @@ namespace UniVue.Editor
                 rectTransform.name = $"{name}_{index++}";
             }
 
-            ReflectionUtils.InvokeMethod(target, "Resize");
+            Vector2 distance = cellSize * (gap / Vector2.Max(gap, Vector2.one)) + gap;
+            float temp = direction == ScrollDirection.Vertical ? rows : cols;
+            content.sizeDelta = temp * distance * new Vector2(direction == ScrollDirection.Vertical ? 0 : 1,
+                                                              direction == ScrollDirection.Vertical ? 1 : 0);
 
             //按下面的方法确保content的前面rows个为第一列或前cols个为第一行
             if (direction == ScrollDirection.Vertical) //垂直滚动时位置按行一行一行的设置

@@ -286,10 +286,10 @@ namespace UniVue.UI.Widgets
         /// </summary>
         protected virtual void Resize()
         {
-            Vector3 deltaPos = Distance;
             float temp = scrollDir == ScrollDirection.Vertical ? Count / (float)grid.x : Count / (float)grid.y;
-            _scrollRect.content.sizeDelta = (Mathf.FloorToInt(temp) + 1) * deltaPos;
-
+            Vector2 directionVector = scrollDir == ScrollDirection.Vertical ? new Vector2(0, 1) : new Vector2(1, 0);
+            _scrollRect.content.sizeDelta = (Mathf.FloorToInt(temp) + 1) * (Distance * directionVector);
+            
             //当前是否可以移动
             _scrollRect.movementType = Count <= gap.x * gap.y
                 ? ScrollRect.MovementType.Clamped
