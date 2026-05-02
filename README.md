@@ -22,7 +22,7 @@ UniVue内部响应式本质是**数据驱动+事件驱动**，数据层主要是
 
 
 
-![RGraphs.png](.\RGraphs.png)
+![RGraphs.png](RGraphs.png)
 
 M代表数据Model，E代表事件Event，P代表数据Model的属性，R代表渲染函数，G代表RGraph。
 
