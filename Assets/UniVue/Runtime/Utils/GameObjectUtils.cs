@@ -146,5 +146,36 @@ namespace UniVue.Utils
             KeepTheSameWithPrefab(prefab.GetComponent<RectTransform>(), clone.GetComponent<RectTransform>());
             return clone;
         }
+
+        public static GameObject CreateGameObject(string name, Transform parent = null)
+        {
+            GameObject go = new(name);
+            go.transform.SetParent(parent);
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale = Vector3.one;
+            return go;
+        }
+
+        public static GameObject CreateRectTransformGameObject(string name, Transform parent = null)
+        {
+            GameObject go = new(name, typeof(RectTransform));
+            if (!go.TryGetComponent(out RectTransform rt))
+            {
+                rt = go.AddComponent<RectTransform>();
+            }
+
+            rt.SetParent(parent);
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = Vector2.zero;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.position = Vector3.zero;
+            rt.rotation = Quaternion.identity;
+            rt.localScale = Vector3.one;
+            rt.localScale = Vector3.one;
+            rt.localPosition = Vector3.zero;
+            return go;
+        }
     }
 }

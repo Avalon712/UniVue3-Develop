@@ -1,18 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UniVue.UI;
 
 public class LayerMgrExtensionTest : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public Canvas canvasPrefab;
 
-    // Update is called once per frame
-    void Update()
+    private void Start()
     {
-        
+        UIMgr.Initialize(new MyUIPrefabLoader(), new MyCustomLayerMgr(canvasPrefab));
+
+        UIMgr.Open<GMView>();
     }
 }

@@ -12,11 +12,11 @@ public sealed partial class CommonView : BaseView
     protected override void OnInit()
     {
         enableUpdatePerSecond = true;
-        
-        for (int i = 0; i < 1000; i++) 
-            _items.Add(new ItemData { Label = $"Label {i}", IsSelected = i % 2 == 0 , Index = i});
-        
-        OpComponent.BindOp(new OpComponent.OpCode(){Name = "Invoke Method"}, code =>
+
+        for (int i = 0; i < 1000; i++)
+            _items.Add(new ItemData { Label = $"Label {i}", IsSelected = i % 2 == 0, Index = i });
+
+        OpComponent.BindOp(new OpComponent.OpCode { Name = "Invoke Method" }, code =>
         {
             if (code.Code == "VL")
             {
@@ -32,7 +32,7 @@ public sealed partial class CommonView : BaseView
             {
                 AddComponent<LoopList>("HLoopListComponent", Container, (success, component) =>
                 {
-                    if(!success) return;
+                    if (!success) return;
                     component.BindItemRender<HLoopListItem>((index, item) =>
                     {
                         item.SetData(_items[index]);
@@ -45,7 +45,7 @@ public sealed partial class CommonView : BaseView
             {
                 AddComponent<LoopGrid>("VLoopGridComponent", Container, (success, component) =>
                 {
-                    if(!success) return;
+                    if (!success) return;
                     component.BindItemRender<LoopGridItem>((index, item) =>
                     {
                         item.SetData(_items[index]);
@@ -58,13 +58,9 @@ public sealed partial class CommonView : BaseView
             {
                 AddComponent<LoopGrid>("HLoopGridComponent", Container, (success, component) =>
                 {
-                    if(!success) return;
+                    if (!success) return;
                     component.BindItemRender<LoopGridItem>((index, item) =>
                     {
-                        if (_items[index].Index != index)
-                        {
-                            print("绑定有问题");
-                        }
                         item.SetData(_items[index]);
                     });
                     component.Count = _items.Count;
@@ -95,28 +91,30 @@ public sealed partial class CommonView : BaseView
             loopList.Count = _items.Count;
             loopList.Show();
         }
-        
+
         foreach (LoopGrid grid in GetViewComponents<LoopGrid>())
         {
             grid.Count = _items.Count;
             grid.Show();
         }
-        
+
         base.OnOpen();
         RefreshUI(true);
     }
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
+
 partial class CommonView
 {
-    [UniVue.UI.LazyInitUI("/#Container")]
-    public UnityEngine.RectTransform Container { get; }
+    [LazyInitUI("/#Container")]
+    public RectTransform Container { get; }
 
-    [UniVue.UI.LazyInitUI("/CloseBtnUI")]
+    [LazyInitUI("/CloseBtnUI")]
     public CloseBtnUI CloseBtnUI { get; }
 
-    [UniVue.UI.LazyInitUI("/OpComponent")]
+    [LazyInitUI("/OpComponent")]
     public OpComponent OpComponent { get; }
 }
+
 #endregion // UniVue Auto-Generated

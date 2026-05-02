@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UniVue.Utils;
 using Object = UnityEngine.Object;
 
 namespace UniVue.UI
@@ -28,19 +29,16 @@ namespace UniVue.UI
             Root = canvas.gameObject;
             Root.SetActive(true);
 
-            HideLayer = new GameObject("Hide");
-            HideLayer.AddComponent<RectTransform>();
+            HideLayer = GameObjectUtils.CreateRectTransformGameObject("Hide Layer", canvas.transform);
             HideLayer.SetActive(false);
             HideLayer.hideFlags = HideFlags.HideInHierarchy;
-            Transform hideLayerTransform = HideLayer.transform;
-            hideLayerTransform.SetParent(canvas.transform);
-            hideLayerTransform.localScale = Vector3.one;
-            hideLayerTransform.position = Vector3.zero;
-            hideLayerTransform.rotation = Quaternion.identity;
-            hideLayerTransform.localPosition = Vector3.zero;
         }
 
         public static DefaultLayerMgr Default { get; } = new();
+
+        public GameObject Root { get; }
+
+        public GameObject HideLayer { get; }
 
         public string GetLayerName(int layer)
         {
@@ -59,8 +57,6 @@ namespace UniVue.UI
             return CreateNewLayer(layerName);
         }
 
-        public GameObject Root { get; }
-        public GameObject HideLayer { get; }
 
         private GameObject CreateNewLayer(string layerName)
         {
@@ -74,20 +70,11 @@ namespace UniVue.UI
                 _layers.Add(transform);
             }
 
-            Canvas canvas = Root.GetComponent<Canvas>();
-            GameObject newLayerObj = new(layerName);
-            RectTransform newLayer = newLayerObj.AddComponent<RectTransform>();
+            RectTransform canvas = Root.GetComponent<Canvas>().transform as RectTransform;
+            GameObject newLayerObj = GameObjectUtils.CreateRectTransformGameObject(layerName, canvas);
+            RectTransform newLayer = newLayerObj.transform as RectTransform;
+            newLayer.sizeDelta = canvas.sizeDelta;
 
-            newLayer.SetParent(root);
-            newLayer.anchorMin = new Vector2(0.5f, 0.5f);
-            newLayer.anchorMax = new Vector2(0.5f, 0.5f);
-            newLayer.anchoredPosition = Vector2.zero;
-            newLayer.pivot = new Vector2(0.5f, 0.5f);
-            newLayer.localScale = Vector3.one;
-            newLayer.position = Vector3.zero;
-            newLayer.rotation = Quaternion.identity;
-            newLayer.localPosition = Vector3.zero;
-            newLayer.sizeDelta = (canvas.transform as RectTransform).sizeDelta;
 #if UNITY_EDITOR
             _tracker.Add(canvas, newLayer, DrivenTransformProperties.All);
 #endif

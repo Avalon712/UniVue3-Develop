@@ -132,38 +132,65 @@ namespace UniVue.UI.Widgets
         {
             if (!_isDirty) return;
             _scrollRect.viewport.GetWorldCorners(_viewportCorners);
-            int maxUpdateSteps = 30;
+            int maxUpdateSteps = Mathf.Max(grid.x * grid.y, 1);
+            
             if (scrollDir == ScrollDirection.Vertical)
             {
-                while (_isDirty && maxUpdateSteps-- > 0)
+                GetChild(FirstIndex).Value.GetWorldCorners(_itemCorners);
+                if (_itemCorners[0].y > _viewportCorners[1].y)
                 {
-                    GetChild(FirstIndex).Value.GetWorldCorners(_itemCorners);
-                    if (_itemCorners[0].y > _viewportCorners[1].y)
+                    while (_isDirty && maxUpdateSteps-- > 0)
                     {
-                        _isDirty = OnMoveItem(Direction.Up, _viewportCorners, _itemCorners);
+                        GetChild(FirstIndex).Value.GetWorldCorners(_itemCorners);
+                        _isDirty = _itemCorners[0].y > _viewportCorners[1].y && 
+                                   OnMoveItem(Direction.Up, _viewportCorners, _itemCorners);
+                    }
+                }
+                else
+                {
+                    GetChild(LastIndex).Value.GetWorldCorners(_itemCorners);
+                    if (_itemCorners[0].y < _viewportCorners[0].y)
+                    {
+                        while (_isDirty && maxUpdateSteps-- > 0)
+                        {
+                            GetChild(LastIndex).Value.GetWorldCorners(_itemCorners);
+                            _isDirty = _itemCorners[0].y < _viewportCorners[0].y && 
+                                       OnMoveItem(Direction.Down, _viewportCorners, _itemCorners);
+                        }
                     }
                     else
                     {
-                        GetChild(LastIndex).Value.GetWorldCorners(_itemCorners);
-                        if (_itemCorners[0].y < _viewportCorners[0].y)
-                            _isDirty = OnMoveItem(Direction.Down, _viewportCorners, _itemCorners);
+                        _isDirty = false;
                     }
                 }
             }
             else
             {
-                while (_isDirty && maxUpdateSteps-- > 0)
+                GetChild(FirstIndex).Value.GetWorldCorners(_itemCorners);
+                if (_itemCorners[3].x < _viewportCorners[1].x)
                 {
-                    GetChild(FirstIndex).Value.GetWorldCorners(_itemCorners);
-                    if (_itemCorners[3].x < _viewportCorners[1].x)
+                    while (_isDirty && maxUpdateSteps-- > 0)
                     {
-                        _isDirty = OnMoveItem(Direction.Left, _viewportCorners, _itemCorners);
+                        GetChild(FirstIndex).Value.GetWorldCorners(_itemCorners);
+                        _isDirty = _itemCorners[3].x < _viewportCorners[1].x && 
+                                   OnMoveItem(Direction.Left, _viewportCorners, _itemCorners);
+                    }
+                }
+                else
+                {
+                    GetChild(LastIndex).Value.GetWorldCorners(_itemCorners);
+                    if (_itemCorners[3].x > _viewportCorners[3].x)
+                    {
+                        while (_isDirty && maxUpdateSteps-- > 0)
+                        {
+                            GetChild(LastIndex).Value.GetWorldCorners(_itemCorners);
+                            _isDirty = _itemCorners[3].x > _viewportCorners[3].x && 
+                                       OnMoveItem(Direction.Right, _viewportCorners, _itemCorners);
+                        }
                     }
                     else
                     {
-                        GetChild(LastIndex).Value.GetWorldCorners(_itemCorners);
-                        if (_itemCorners[3].x > _viewportCorners[3].x)
-                            _isDirty = OnMoveItem(Direction.Right, _viewportCorners, _itemCorners);
+                        _isDirty = false;
                     }
                 }
             }
