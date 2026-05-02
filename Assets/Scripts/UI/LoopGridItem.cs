@@ -24,11 +24,9 @@ public partial class LoopGridItem : LoopItem
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
-
 partial class LoopGridItem
 {
-    [LazyInitUI("/IndexTxt")]
-    public TextMeshProUGUI IndexTxt { get; }
+    [UniVue.UI.LazyInitUI("/IndexTxt")]
+    public TMPro.TextMeshProUGUI IndexTxt { get; }
 }
-
 #endregion // UniVue Auto-Generated

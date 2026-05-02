@@ -72,47 +72,45 @@ public partial class DebugView : BaseView
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
-
 partial class DebugView
 {
-    [LazyInitUI("/AgeTxt")]
-    public TextMeshProUGUI AgeTxt { get; }
+    [UniVue.UI.LazyInitUI("/AgeTxt")]
+    public TMPro.TextMeshProUGUI AgeTxt { get; }
 
-    [LazyInitUI("/CloseBtnUI")]
+    [UniVue.UI.LazyInitUI("/CloseBtnUI")]
     public CloseBtnUI CloseBtnUI { get; }
 
-    [LazyInitUI("/GenderToggle")]
-    public Toggle GenderToggle { get; }
+    [UniVue.UI.LazyInitUI("/GenderToggle")]
+    public UnityEngine.UI.Toggle GenderToggle { get; }
 
-    [LazyInitUI("/GenderToggle/GenderTxt")]
-    public TextMeshProUGUI GenderTxt { get; }
+    [UniVue.UI.LazyInitUI("/GenderToggle/GenderTxt")]
+    public TMPro.TextMeshProUGUI GenderTxt { get; }
 
-    [LazyInitUI("/Image")]
-    public Image Image { get; }
+    [UniVue.UI.LazyInitUI("/Image")]
+    public UnityEngine.UI.Image Image { get; }
 
-    [LazyInitUI("/Image (1)/ProfierTxt")]
-    public TextMeshProUGUI ProfierTxt { get; }
+    [UniVue.UI.LazyInitUI("/Image (1)/ProfierTxt")]
+    public TMPro.TextMeshProUGUI ProfierTxt { get; }
 
-    [LazyInitUI("/Image/DataTxt")]
-    public TextMeshProUGUI DataTxt { get; }
+    [UniVue.UI.LazyInitUI("/Image/DataTxt")]
+    public TMPro.TextMeshProUGUI DataTxt { get; }
 
-    [LazyInitUI("/LangTxt")]
-    public TextMeshProUGUI LangTxt { get; }
+    [UniVue.UI.LazyInitUI("/LangTxt")]
+    public TMPro.TextMeshProUGUI LangTxt { get; }
 
-    [LazyInitUI("/LanguageDropdown")]
-    public TMP_Dropdown LanguageDropdown { get; }
+    [UniVue.UI.LazyInitUI("/LanguageDropdown")]
+    public TMPro.TMP_Dropdown LanguageDropdown { get; }
 
-    [LazyInitUI("/MoneySlider")]
-    public Slider MoneySlider { get; }
+    [UniVue.UI.LazyInitUI("/MoneySlider")]
+    public UnityEngine.UI.Slider MoneySlider { get; }
 
-    [LazyInitUI("/MoneyTxt")]
-    public TextMeshProUGUI MoneyTxt { get; }
+    [UniVue.UI.LazyInitUI("/MoneyTxt")]
+    public TMPro.TextMeshProUGUI MoneyTxt { get; }
 
-    [LazyInitUI("/NameInputOp")]
+    [UniVue.UI.LazyInitUI("/NameInputOp")]
     public OpComponent NameInputOp { get; }
 
-    [LazyInitUI("/NameTxt")]
-    public TextMeshProUGUI NameTxt { get; }
+    [UniVue.UI.LazyInitUI("/NameTxt")]
+    public TMPro.TextMeshProUGUI NameTxt { get; }
 }
-
 #endregion // UniVue Auto-Generated

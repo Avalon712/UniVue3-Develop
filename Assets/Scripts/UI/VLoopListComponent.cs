@@ -34,11 +34,9 @@ public sealed class ItemData : BaseModel
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
-
 partial class VLoopListComponent
 {
-    [LazyInitUI("/VLoopList")]
-    public LoopList VLoopList { get; }
+    [UniVue.UI.LazyInitUI("/VLoopList")]
+    public UniVue.UI.Widgets.LoopList VLoopList { get; }
 }
-
 #endregion // UniVue Auto-Generated

@@ -104,17 +104,15 @@ public sealed partial class CommonView : BaseView
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
-
 partial class CommonView
 {
-    [LazyInitUI("/#Container")]
-    public RectTransform Container { get; }
+    [UniVue.UI.LazyInitUI("/#Container")]
+    public UnityEngine.RectTransform Container { get; }
 
-    [LazyInitUI("/CloseBtnUI")]
+    [UniVue.UI.LazyInitUI("/CloseBtnUI")]
     public CloseBtnUI CloseBtnUI { get; }
 
-    [LazyInitUI("/OpComponent")]
+    [UniVue.UI.LazyInitUI("/OpComponent")]
     public OpComponent OpComponent { get; }
 }
-
 #endregion // UniVue Auto-Generated

@@ -170,6 +170,29 @@ namespace UniVue.CodeGen
             return false;
         }
 
+        /// <summary>
+        /// 将 Unity 资产路径（相对项目根，如 <c>Assets/...</c>、<c>Packages/...</c>）转为绝对磁盘路径。
+        /// 不可用 <see cref="Path.GetFullPath(string)" /> 直接作用于资产路径——其相对于进程当前目录，常与项目根不一致。
+        /// </summary>
+        private static bool TryGetAbsolutePath(string assetRelativePath, out string absolutePath)
+        {
+            absolutePath = null;
+            if (string.IsNullOrEmpty(assetRelativePath)) return false;
+
+            if (Path.IsPathRooted(assetRelativePath))
+            {
+                absolutePath = Path.GetFullPath(assetRelativePath);
+                return File.Exists(absolutePath);
+            }
+
+            string projectRoot = Path.GetDirectoryName(Application.dataPath);
+            if (string.IsNullOrEmpty(projectRoot)) return false;
+
+            string rel = assetRelativePath.Replace('/', Path.DirectorySeparatorChar);
+            absolutePath = Path.GetFullPath(Path.Combine(projectRoot, rel));
+            return File.Exists(absolutePath);
+        }
+
         private static bool ProcessPrefab(string prefabPath, ManifestData manifest, bool forceRegenerate = false)
         {
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
@@ -200,8 +223,7 @@ namespace UniVue.CodeGen
             string scriptAssetPath = AssetDatabase.GetAssetPath(monoScript);
             if (string.IsNullOrEmpty(scriptAssetPath)) return false;
 
-            string fullPath = Path.GetFullPath(scriptAssetPath);
-            if (!File.Exists(fullPath)) return false;
+            if (!TryGetAbsolutePath(scriptAssetPath, out string fullPath)) return false;
 
             if (record != null && record.scriptPath != scriptAssetPath)
                 StripAutoGenRegionFromFile(record.scriptPath);
@@ -346,8 +368,7 @@ namespace UniVue.CodeGen
         private static void StripAutoGenRegionFromFile(string scriptAssetPath)
         {
             if (string.IsNullOrEmpty(scriptAssetPath)) return;
-            string fullPath = Path.GetFullPath(scriptAssetPath);
-            if (!File.Exists(fullPath)) return;
+            if (!TryGetAbsolutePath(scriptAssetPath, out string fullPath)) return;
             string content = File.ReadAllText(fullPath, Encoding.UTF8);
             string stripped = StripAutoGenRegion(content);
             if (stripped != content)

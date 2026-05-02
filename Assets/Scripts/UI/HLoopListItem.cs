@@ -24,11 +24,9 @@ public partial class HLoopListItem : LoopItem
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
-
 partial class HLoopListItem
 {
-    [LazyInitUI("/IndexTxt")]
-    public TextMeshProUGUI IndexTxt { get; }
+    [UniVue.UI.LazyInitUI("/IndexTxt")]
+    public TMPro.TextMeshProUGUI IndexTxt { get; }
 }
-
 #endregion // UniVue Auto-Generated

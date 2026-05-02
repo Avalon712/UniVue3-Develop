@@ -35,17 +35,15 @@ public sealed partial class VLoopListItem : LoopItem
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
-
 partial class VLoopListItem
 {
-    [LazyInitUI("/BgImg")]
-    public Image BgImg { get; }
+    [UniVue.UI.LazyInitUI("/BgImg")]
+    public UnityEngine.UI.Image BgImg { get; }
 
-    [LazyInitUI("/SelectedToggle")]
-    public Toggle SelectedToggle { get; }
+    [UniVue.UI.LazyInitUI("/SelectedToggle")]
+    public UnityEngine.UI.Toggle SelectedToggle { get; }
 
-    [LazyInitUI("/SelectedToggle/LabelTxt")]
-    public TextMeshProUGUI LabelTxt { get; }
+    [UniVue.UI.LazyInitUI("/SelectedToggle/LabelTxt")]
+    public TMPro.TextMeshProUGUI LabelTxt { get; }
 }
-
 #endregion // UniVue Auto-Generated
