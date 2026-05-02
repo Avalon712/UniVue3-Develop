@@ -4,149 +4,96 @@
 
 UniVue目前有针对UGUI的扩展实现，后续有时间再慢慢增加对FariyGUI和UIToolkit的实现，当然你也可以自己扩展实现，这些扩展往往是针对不同底层UI框架组件的实现，大多数通用功能模块在UniVue中已经实现。
 
-## 一些想说的话
+## 一些废话
 
 目前已经参加工作近一年，这一年里的工作经验彻底让我舍弃了过去的UniVue的设计，因为过去的设计不适合团队协作，以及程序员的心力负担较重。由于要上班，也是最近几个月零零散散的写框架，每天写一些，唉，怀念大学那会儿每天单纯写代码的日子，无忧无虑~
 
-有时候在想现在的AI已经这么nb还需要做这些事情吗？每个人都有自己的看法吧，我不知道，我只是出于乐趣写这些东西，或许打发无聊的时间吧。
+有时候在想现在的AI已经这么nb还需要做这些事情吗？每个人都有自己的看法吧，我不知道，我只是出于乐趣写这些东西，或许打发无聊的时间吧，单纯瘾大。
 
 ---
 
-## 核心模块
+## 响应式核心原理
 
-1. **响应式渲染**（`UniVue.UI` + `UniVue.Model`）
-2. **高性能无GC的红点系统的实现**（`UniVue.UI.RedPointMgr`）
-3. 协程（`UniVue.Coroutine`）
-4. 事件（`UniVue.Event`）
-5. 定时器（`UniVue.Timer`）
+UniVue内部响应式本质是**数据驱动+事件驱动**，数据层主要是通过继承BaseModel，在数据发生变化时通知渲染层，事件层则是UI事件和自定义事件被渲染层监听时触发渲染。
 
----
+渲染层的结构是一个**多索引有向无环图**，任意路径的末尾节点都是渲染函数，当数据变化或事件触发时，抵达渲染节点最多不会超过5层，即时间复杂度为O(1)。
 
-## 1) 响应式渲染（核心）
+**带延迟性的响应式渲染**。考虑到UI渲染大多数不需要很高的渲染频率，因此内部默认的渲染频率为0.1秒，即在这0.1秒内被触发的所有渲染只会被当作一次渲染调用，这种带延迟性的响应式渲染可以大幅降低重复渲染带来的问题。比如当前帧内会对模型的属性A、B、C修改多次，如果每次都是立即式渲染，渲染函数会被多次重复调用，然而事实上当前帧的所有变化都可以收敛为一次渲染调用。当然也可以修改延迟调用的频率，最低的渲染频率为延迟一帧。
 
-UniVue的响应式渲染逻辑并不复杂，本质上只是监听了数据的变化和事件的触发这两种。数据的变化在编译器会被执行IL注入而实现对数据变化的监听。底层的渲染结构是有向无环的图结构**RenderGraph**。
 
-### 作用
 
-- `BaseModel` 负责数据变更通知
-- `BaseUI` 负责绑定渲染函数（每个BaseUI会有一个RenderGraph渲染数据结构）
-- `RenderContext` 统一收集变更并按频率触发渲染
-- `BaseComponent/BaseView`组织UI结构、UI行为
+![RGraphs.png](D:\Temp\RGraphs.png)
 
-### 推荐写法：自动分析 Bind（首推）
+M代表数据Model，E代表事件Event，P代表数据Model的属性，R代表渲染函数，G代表RGraph。
 
-注：自动分析的Bind方法不支持Event模式，如果需要通过事件触发渲染你仍然需要手动链式调用设置。
+一次完整的渲染流程举例：当数据M1的P1属性发生了变化时，从Entry进入索引得到M1绑定了两个RGraph：G1和G4，从路径G1->M1->P1->R3得到渲染函数R3，从路径G4->M1->R5得到渲染函数R5，从路径G4->M1->R6得到渲染函数R6，得到所有要触发渲染函数为R3、R5、R6，这些函数不会立即执行，而是被放到一个HashSet中，等待渲染延迟结束后才被执行。如果在等待期间事件E2触发，从路径G2->E2->R2，G2->E2->R3，G4->32->R6得到渲染函数R2、R3、R6，放入HashSet，去重得到R2、R3、R5、R6，避免了重复渲染。特别是一些渲染函数要加载资源时，这种情况下会极大减少因为UI刷新导致的性能卡顿。
 
-```csharp
-Bind(() => RenderUI());
-Bind(true, () => RenderUI());
-```
+本质绑定就是一个watch函数，数据和事件被监听。
 
-编译期 CodeGen 会尝试分析渲染方法访问的模型字段/属性，自动补全 `On(...).Build()`。
 
-> 建议：默认优先使用自动分析 Bind。仅在分析不到依赖或你需要精确控制依赖范围时，再改用手动链式 `Bind`。
 
-### 手动链式 Bind
+## 使用
 
-可变参数（数量不超过10个）这里在编译时会被自动替换为无GC的重载方法，无需担心GC Alloc。
+UniVue的UI工作流是基于组件模块化的，BaseComponet（受BaseView的管理）、BaseView是模块化的基础，你的项目中自己做好的预制体挂载这些脚本，内部已经实现了绝大多数的功能，如事件绑定、定时器、协程(UniVue内部实现的一套C#层面的协程，不是Unity的协程)、渲染绑定、帧回调、秒回调、动态创建子View、动态创建组件等等。
 
-```csharp
-Bind(() =>
-{
-    txtName.text = playerModel.Name;
-    txtLv.text = playerModel.Level.ToString();
-})
-    .On(playerModel, nameof(PlayerModel.Name), nameof(PlayerModel.Level))
-    .On(UIEvent.PlayerRefreshed)
-    .Build();
-```
+在初始化UIMgr时，你需要将你项目中的资源管理接口暴露给UniVue使用，即实现IUIPrefabLoader接口。
 
----
 
-## 2) 红点系统
 
-**采用位编码实现树结构的一种创新性高性能的红点系统。**
+## UniVue核心功能
 
-### 核心规则
+UniVue是一个很轻量的UI框架，最核心的功能就是响应式，解决实际项目中UI代码多而容易很杂的问题，响应式开发让我们只需要关系架构上的设计而非写这些毫无卵用的低级代码，固定的工作流交给AI可以获得高效同时犯错率极低的输出。
 
-- `RedPointKey : ulong` 编码树结构和 Or/And 规则
-- 业务仅直接设置叶子：`SetActive(leafKey, bool)`
-- 父节点状态由子节点自动聚合（帧末刷新）
+多语言、资源管理等这些UniVue都没有，因为这些功能每个功能都能单独拿出来做一个框架，市面上已经有很多优秀的这些框架，因此不再重复造轮子，UniVue只暴露了接口，需要你自己根据自己的项目使用的框架进行定制化实现。
 
-### 常用 API
+目前由于精力有限，只针对了UGUI进行了实现。如果你想扩展其他UI框架，如FariyGUI、UI Toolkit，完全可以在现在代码的基础上剥离UGUI部分（只有极少部分，主要部分就是UGUI是基于GameObject的，因此内部BaseView、BaseComponet的设计也是基于此的）。你只需要单独实现BaseView、BaseComponet就能无缝实现基于其他框架的UniVue。
 
-```csharp
-UIMgr.RedPointMgr.SetActive(RedPointKey.Mail_Unread, true);
-UIMgr.RedPointMgr.ListenerRedPointStatus(RedPointKey.Mail, OnMailRedChanged);
-UIMgr.RedPointMgr.UnListenerRedPointStatus(RedPointKey.Mail, OnMailRedChanged);
-```
 
-### 动态依赖
 
-```csharp
-ulong root = UIMgr.RedPointMgr.CreateRedPointTree(RedPointRule.Or, "RuntimeRoot");
-ulong child = UIMgr.RedPointMgr.AddDependency(root, RedPointRule.Or);
-UIMgr.RedPointMgr.DeleteDependency(child);
-```
+#### 一、响应式渲染
 
-### 编辑器工具
+渲染层：RGraphs、RGraph、RNode；
 
-- `UniVue/Windows/RedPointTreeEditor`：编辑与导出 `RedPointKey.g.cs`
-- `UniVue/Windows/RedPointTreeViewer`：运行时查看与调试红点状态
+数据层：BaseModel；
 
----
+事件层：EventMgr；
 
-## 3) 协程（CoroutineMgr）
 
-这是我过去写的一个独立模块，[Avalon712/VCoroutine: C# Coroutine For Unity3D](https://github.com/Avalon712/VCoroutine)，现在直接内置在框架中成为一个核心的依赖模块。
 
-统一协程调度器，不依赖 `MonoBehaviour.StartCoroutine`：
+### 二、UI
 
-```csharp
-CoroutineID id = CoroutineMgr.Run(MyRoutine());
-CoroutineMgr.Stop(id);
-CoroutineMgr.Resume(id);
-CoroutineMgr.Kill(id);
-```
+**BaseUI、BaseView、BaseComponent、UIMgr**；（每个BaseUI持有一个唯一的RGraph节点）。
 
-- 支持 `Update / LateUpdate / FixedUpdate` 运行环境
-- 支持协程依赖（等待依赖结束后再运行）
-- 支持自定义 Yield 处理（`CoroutineYieldHandleContext`）
+**BaseView是可嵌套的树型结构单元**，子View受到父View的管理。UIMgr只能管理**根View**，同时负责层级管理，如果你要根据自己的项目定制化实现层级管理，需要实现IUILayerMgr接口，在初始化UIMgr时给UniVue使用。
 
----
 
-## 4) 事件（EventMgr）
 
-```csharp
-EventMgr.On(GameEvent.PlayerChanged, OnPlayerChanged);
-EventMgr.On<int>(GameEvent.GoldChanged, OnGoldChanged);
+### 三、UI代码生成
 
-EventMgr.Dispatch(GameEvent.PlayerChanged);
-EventMgr.Dispatch(GameEvent.GoldChanged, 100);
-```
+继承自BaseView、BaseComponent可以自动生成UI代码，生成对一些UI组件的属性引用，你可以扩展自己的生成规则，只需要继承**UICodeGenRule**类即可，父类的Traverse方法可以方便的遍历整个UI结构。
 
-### 同一 key 下，传参与不传参区别
 
-- `Dispatch(key)`：只触发无参 `Action`
-- `Dispatch<T>(key, arg)`：触发匹配的 `Action<T>`，也会触发无参 `Action`
-- `Action<TOther>` 与当前 `T` 不匹配时不会被调用
 
----
+### 四、高性能的红点系统
 
-## 5) 定时器（TimerMgr）
+UniVue内部通过long类型生成红点树结构，相比传统的字符串方式手动构建红点树结构，大幅降低了内存占用，特别是一些小游戏中，红点系统是标配了，随着项目的扩大，后期的红点系统字符串占用比例相当高。但是long类型也有缺点，就是红点树的数量不能超过65535，这是因为内部使用高2字节填充根节点，树的递归深度不能超过6层，除了根层级，其余层级不能超过127个节点数量，在实际中，这百分百已经够用了。
 
-```csharp
-ulong timer = TimerMgr.Create()
-    .OfDelay(1f)
-    .OfInterval(0.5f)
-    .OfCount(5)
-    .OfCallback(() => { })
-    .Build();
+同时配置有红点编辑器，可以在运行时方便地进行调试红点。
 
-TimerMgr.AddTimer(...) //如果你不喜欢链式调用可以调用此方法设置参数
 
-TimerMgr.Kill(timer);
-```
 
-- 支持延迟、间隔、次数、执行条件、取消条件
-- 由 `CoroutineMgr` 驱动
+### 五、高性能的定时器
+
+TimerMgr内部使用小顶堆数据结构得到每次需要等待的最少时间，这样等待时间结束只需要将堆顶的定时器拿出来执行即可，避免了每帧遍历所有定时器进行统计。堆的数据结构特点，每次删除、添加的时间复杂度都是**O(logN)**，因此堆的更新也是非常快，内部定时器的存储任然是基于哈希表的，定时器的删除、添加时间复杂度为O(1)。
+
+
+
+### 六、可追踪来源的事件系统
+
+事件中心有个最烦人的问题就是不知道调用来源，不知道在哪儿注册的，调用堆栈里面拿不到源。EventMgr解决了这个问题，在Dispatch事件时可选择打印事件源，可拿到这个事件的来源信息。
+
+
+
+### 七、C#层实现的协程
+
+UniVue内部使用的协程不是基于Unity的，为了统一管理BaseUI的生命周期，以及提供更强大的协程功能，而在C#层基于迭代器的思路实现了协程（Unity的协程本质也是这样，只不过由C++层的MonoBehaviour驱动）。这个框架也是我写的，源自：[Avalon712/VCoroutine: C# Coroutine For Unity3D](https://github.com/Avalon712/VCoroutine)
