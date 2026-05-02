@@ -1,4 +1,5 @@
 ﻿using System;
+using TMPro;
 using UnityEngine.UI;
 using UniVue.Model;
 using UniVue.UI;
@@ -26,18 +27,20 @@ public sealed partial class OpComponent : BaseComponent
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
+
 partial class OpComponent
 {
-    [UniVue.UI.LazyInitUI("/CodeInput")]
-    public TMPro.TMP_InputField CodeInput { get; }
+    [LazyInitUI("/CodeInput")]
+    public TMP_InputField CodeInput { get; }
 
-    [UniVue.UI.LazyInitUI("/CodeInput/Text Area/Text")]
-    public TMPro.TextMeshProUGUI Text { get; }
+    [LazyInitUI("/CodeInput/Text Area/Text")]
+    public TextMeshProUGUI Text { get; }
 
-    [UniVue.UI.LazyInitUI("/ExeBtn")]
-    public UnityEngine.UI.Button ExeBtn { get; }
+    [LazyInitUI("/ExeBtn")]
+    public Button ExeBtn { get; }
 
-    [UniVue.UI.LazyInitUI("/TitleTxt")]
-    public TMPro.TextMeshProUGUI TitleTxt { get; }
+    [LazyInitUI("/TitleTxt")]
+    public TextMeshProUGUI TitleTxt { get; }
 }
+
 #endregion // UniVue Auto-Generated

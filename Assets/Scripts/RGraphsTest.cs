@@ -10,10 +10,10 @@ using UniVue.UI;
 using Debug = UnityEngine.Debug;
 
 /// <summary>
-/// RGraphs 功能与性能压测。覆盖公共 API：<see cref="RGraphs.ClearAll"/>、<c>Clear(BaseModel)</c>、
+/// RGraphs 功能与性能压测。覆盖公共 API：<see cref="RGraphs.ClearAll" />、<c>Clear(BaseModel)</c>、
 /// <c>Clear(ref RGraph, BaseModel)</c>、<c>Clear(..., params string[])</c>、<c>Clear(..., Params&lt;string&gt;)</c>、
 /// 全局/按图 <c>Clear(EventKey)</c>、<c>Rebind</c> 两载；<c>AddNode(..., Params&lt;string&gt;)</c>、
-/// <see cref="RGraphs.TrySetDirty"/>/<see cref="RGraphs.GetEnable"/>；Rebind 提前返回与全局并入/重复边消解。
+/// <see cref="RGraphs.TrySetDirty" />/<see cref="RGraphs.GetEnable" />；Rebind 提前返回与全局并入/重复边消解。
 /// </summary>
 public sealed class RGraphsTest : MonoBehaviour
 {
@@ -23,17 +23,15 @@ public sealed class RGraphsTest : MonoBehaviour
     private int _failed;
     private int _passed;
 
-    /// <summary>
-    /// EventMgr 在无任何该 Key 监听时不会触发全局 OnEvent；RGraphs 依赖 OnEvent 入队，故测试里派发前需挂占位监听。
-    /// </summary>
-    private static void EventDispatchNoopStub()
-    {
-    }
-
     private void Start()
     {
         StartCoroutine(RunAllTests());
     }
+
+    /// <summary>
+    /// EventMgr 在无任何该 Key 监听时不会触发全局 OnEvent；RGraphs 依赖 OnEvent 入队，故测试里派发前需挂占位监听。
+    /// </summary>
+    private static void EventDispatchNoopStub() { }
 
     [ContextMenu("运行 RGraphs 全部测试")]
     private void MenuRunAllTests()
@@ -190,7 +188,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// <see cref="RGraphs.AddNode(ref RGraph, BaseModel, Action, in Params{string})"/>：与多字符串 params 语义一致，属性过滤入边正确。
+    /// <see cref="RGraphs.AddNode(ref RGraph, BaseModel, Action, in Params{string})" />：与多字符串 params 语义一致，属性过滤入边正确。
     /// </summary>
     private IEnumerator Functional_AddNode_ParamsString_MultiProperty(RGraphs graphs)
     {
@@ -474,7 +472,7 @@ public sealed class RGraphsTest : MonoBehaviour
         RGraph rg = default;
         int r = 0;
         graphs.AddNode(ref rg, m, () => r++,
-            nameof(CrossMultiModel.P1), nameof(CrossMultiModel.P2), nameof(CrossMultiModel.P3));
+                       nameof(CrossMultiModel.P1), nameof(CrossMultiModel.P2), nameof(CrossMultiModel.P3));
 
         m.P1 = 1;
         yield return WaitRenderPump();
@@ -684,7 +682,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// <see cref="RGraphs.TrySetDirty"/> / <see cref="RGraphs.GetEnable"/>：仅在禁用时记脏；启用后 TrySetDirty 无效。
+    /// <see cref="RGraphs.TrySetDirty" /> / <see cref="RGraphs.GetEnable" />：仅在禁用时记脏；启用后 TrySetDirty 无效。
     /// </summary>
     private IEnumerator Api_TrySetDirty_GetEnable_Lifecycle(RGraphs graphs)
     {
@@ -730,7 +728,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// <see cref="RGraphs.Clear(BaseModel)"/>：从全局入口移除指定 Model 对所有 RGraph 的挂载。
+    /// <see cref="RGraphs.Clear(BaseModel)" />：从全局入口移除指定 Model 对所有 RGraph 的挂载。
     /// </summary>
     private IEnumerator Api_Clear_BaseModel_AllGraphs(RGraphs graphs)
     {
@@ -751,7 +749,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// <see cref="RGraphs.Clear(ref RGraph, BaseModel, string[])"/>：只卸 P1、P2 属性枝，P3 仍在。
+    /// <see cref="RGraphs.Clear(ref RGraph, BaseModel, string[])" />：只卸 P1、P2 属性枝，P3 仍在。
     /// </summary>
     private IEnumerator Api_Clear_RefGraph_Model_SpecificPropertyParams(RGraphs graphs)
     {
@@ -779,7 +777,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// <see cref="RGraphs.Clear(ref RGraph, BaseModel, Params{string})"/> 与 params 数组语义对齐。
+    /// <see cref="RGraphs.Clear(ref RGraph, BaseModel, Params{string})" /> 与 params 数组语义对齐。
     /// </summary>
     private IEnumerator Api_Clear_RefGraph_Model_ParamsStringStruct(RGraphs graphs)
     {
@@ -806,7 +804,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// propertyNames 为空数组时走「整图对该 Model 卸载」分支，与同参 <see cref="RGraphs.Clear(ref RGraph, BaseModel)"/> 一致。
+    /// propertyNames 为空数组时走「整图对该 Model 卸载」分支，与同参 <see cref="RGraphs.Clear(ref RGraph, BaseModel)" /> 一致。
     /// </summary>
     private IEnumerator Api_Clear_RefGraph_Model_EmptyParamsArray_FullUnbind(RGraphs graphs)
     {
@@ -827,7 +825,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// <see cref="RGraphs.Clear(EventKey)"/>：从全局入口摘掉该 EventKey（多图挂载同一 Key 一并清）。
+    /// <see cref="RGraphs.Clear(EventKey)" />：从全局入口摘掉该 EventKey（多图挂载同一 Key 一并清）。
     /// </summary>
     private IEnumerator Api_Clear_Global_EventKey(RGraphs graphs)
     {
@@ -857,7 +855,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// <see cref="RGraphs.Clear(ref RGraph, EventKey)"/>：只摘掉当前图上某一 EventKey。
+    /// <see cref="RGraphs.Clear(ref RGraph, EventKey)" />：只摘掉当前图上某一 EventKey。
     /// </summary>
     private IEnumerator Api_Clear_RefGraph_SingleEventKey(RGraphs graphs)
     {
@@ -895,7 +893,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// <see cref="RGraphs.Rebind{T}(T, T, bool)"/>：跨 Entry 把 oldModel 所有图边迁到 newModel。
+    /// <see cref="RGraphs.Rebind{T}(T, T, bool)" />：跨 Entry 把 oldModel 所有图边迁到 newModel。
     /// </summary>
     private IEnumerator Api_Rebind_ReplaceModel_Global(RGraphs graphs)
     {
@@ -907,7 +905,7 @@ public sealed class RGraphsTest : MonoBehaviour
         int n = 0;
         graphs.AddNode(ref rg, oldM, () => n++);
 
-        graphs.Rebind(oldM, newM, true);
+        graphs.Rebind(oldM, newM);
         yield return WaitRenderPump();
         int afterRebind = n;
 
@@ -923,7 +921,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// <see cref="RGraphs.Rebind{T}(in RGraph, T, T, bool)"/>：仅切一条图上的 Model 引用。
+    /// <see cref="RGraphs.Rebind{T}(in RGraph, T, T, bool)" />：仅切一条图上的 Model 引用。
     /// </summary>
     private IEnumerator Api_Rebind_ReplaceModel_SingleGraph(RGraphs graphs)
     {
@@ -935,7 +933,7 @@ public sealed class RGraphsTest : MonoBehaviour
         int v = 0;
         graphs.AddNode(ref rg, oldM, () => v++);
 
-        graphs.Rebind(rg, oldM, newM, true);
+        graphs.Rebind(rg, oldM, newM);
         yield return WaitRenderPump();
         int afterRebind = v;
 
@@ -951,7 +949,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// <see cref="RGraphs.Rebind{T}(in RGraph, T, T, bool)"/>：目标图上已存在 <paramref name="newModel"/> 时直接返回，不改变现有绑定。
+    /// <see cref="RGraphs.Rebind{T}(in RGraph, T, T, bool)" />：目标图上已存在 <paramref name="newModel" /> 时直接返回，不改变现有绑定。
     /// </summary>
     private IEnumerator Api_Rebind_SingleGraph_NewModelAlreadyOnGraph_NoOp(RGraphs graphs)
     {
@@ -978,7 +976,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// 全局 <see cref="RGraphs.Rebind{T}(T, T, bool)"/>：目标 Model 已在入口注册（另一张图）时，将 old 的图边并入 existing new。
+    /// 全局 <see cref="RGraphs.Rebind{T}(T, T, bool)" />：目标 Model 已在入口注册（另一张图）时，将 old 的图边并入 existing new。
     /// </summary>
     private IEnumerator Api_Rebind_Global_MergeIntoExistingNewModel(RGraphs graphs)
     {
@@ -1007,7 +1005,7 @@ public sealed class RGraphsTest : MonoBehaviour
     }
 
     /// <summary>
-    /// 全局 Rebind：同一 <see cref="RGraph"/> 上同时已有 old、new 两条模型边时走 SafeDispose 丢弃重复枝。
+    /// 全局 Rebind：同一 <see cref="RGraph" /> 上同时已有 old、new 两条模型边时走 SafeDispose 丢弃重复枝。
     /// </summary>
     private IEnumerator Api_Rebind_Global_DisposeDuplicateWhenSameGraphHasBothModels(RGraphs graphs)
     {
@@ -1036,7 +1034,7 @@ public sealed class RGraphsTest : MonoBehaviour
     private IEnumerator RunStressTest()
     {
         Debug.Log(
-            $"[RGraphsTest][Stress] 开始 graphs={stressGraphCount}, propIter={stressPropertyIterations}, addRemove={stressAddRemoveIterations}");
+                  $"[RGraphsTest][Stress] 开始 graphs={stressGraphCount}, propIter={stressPropertyIterations}, addRemove={stressAddRemoveIterations}");
 
         yield return Stress_AddRemoveLoop_Verified(stressAddRemoveIterations);
         yield return StressManyGraphsPropertyBurst(stressGraphCount, stressPropertyIterations);
@@ -1047,7 +1045,8 @@ public sealed class RGraphsTest : MonoBehaviour
 
     /// <summary>
     /// AddNode/Remove 压测：轮询多实例 Model，避免单 Model 一条边掩盖引用问题；循环末断言
-    /// <see cref="RGraphs.DisableGraphCount"/>、<see cref="RGraphs.WaitExecuteRenderingCount"/>，再 <see cref="RGraphs.ClearAll"/> 二次校验。
+    /// <see cref="RGraphs.DisableGraphCount" />、<see cref="RGraphs.WaitExecuteRenderingCount" />，再
+    /// <see cref="RGraphs.ClearAll" /> 二次校验。
     /// </summary>
     private IEnumerator Stress_AddRemoveLoop_Verified(int iterations)
     {
@@ -1078,7 +1077,7 @@ public sealed class RGraphsTest : MonoBehaviour
             Assert(graphs.WaitExecuteRenderingCount == 0, "Stress AddRemove: ClearAll 后待渲染队列应为空");
 
             Debug.Log(
-                $"[RGraphsTest][Stress] AddNode+Remove x{iterations}, pool={poolSize}: {sw.ElapsedMilliseconds} ms ({sw.Elapsed.TotalMilliseconds / iterations:F4} ms/次)");
+                      $"[RGraphsTest][Stress] AddNode+Remove x{iterations}, pool={poolSize}: {sw.ElapsedMilliseconds} ms ({sw.Elapsed.TotalMilliseconds / iterations:F4} ms/次)");
         }
         finally
         {
@@ -1109,7 +1108,7 @@ public sealed class RGraphsTest : MonoBehaviour
 
             sw.Stop();
             Debug.Log(
-                $"[RGraphsTest][Stress] 属性赋值 {propertyIterations}x{graphCount} 次（仅同步路径）: {sw.ElapsedMilliseconds} ms");
+                      $"[RGraphsTest][Stress] 属性赋值 {propertyIterations}x{graphCount} 次（仅同步路径）: {sw.ElapsedMilliseconds} ms");
 
             yield return WaitRenderPump(8);
             Debug.Log($"[RGraphsTest][Stress] WaitExecuteRenderingCount={graphs.WaitExecuteRenderingCount}");
@@ -1122,7 +1121,7 @@ public sealed class RGraphsTest : MonoBehaviour
 
     /// <summary>
     /// 大量 Model 各占一条独立的绑定边（各槽独立计数）。不因「取样瞬间」误判：
-    /// 脚本协程、<see cref="CoroutineMgr"/> 与队列批处理<strong>不具有与 MonoBehaviour.Update 对齐的瞬时序</strong>，
+    /// 脚本协程、<see cref="CoroutineMgr" /> 与队列批处理<strong>不具有与 MonoBehaviour.Update 对齐的瞬时序</strong>，
     /// 下一轮赋值前只靠固定帧数有时会剩一批未排空。结束主循环后对<strong>再等若干帧直至各槽计数达到 rounds 或超时</strong>，
     /// 再给结论；断言针对稳定态，不苛求与某一帧边沿对齐。
     /// </summary>
@@ -1186,14 +1185,16 @@ public sealed class RGraphsTest : MonoBehaviour
             }
 
             Debug.Log(
-                $"[RGraphsTest][Stress][Cross] {n} 槽 × {rounds} 轮：稳定化额外帧 {stabilizeFrames}，min={mn} max={mx}，赋值同步≈ {syncMs:F2} ms，墙钟 {swFull.ElapsedMilliseconds} ms");
+                      $"[RGraphsTest][Stress][Cross] {n} 槽 × {rounds} 轮：稳定化额外帧 {stabilizeFrames}，min={mn} max={mx}，赋值同步≈ {syncMs:F2} ms，墙钟 {swFull.ElapsedMilliseconds} ms");
 
             if (mn != rounds || mx != rounds)
+            {
                 Debug.LogWarning(
-                    $"[RGraphsTest][Stress][Cross] 首槽不匹配索引={StressCross_FirstIndexNotEqual(renderCountBySlot, n, rounds)}, 期望值 {rounds}");
+                                 $"[RGraphsTest][Stress][Cross] 首槽不匹配索引={StressCross_FirstIndexNotEqual(renderCountBySlot, n, rounds)}, 期望值 {rounds}");
+            }
 
             Assert(mn == mx && mn == rounds,
-                $"稳定化 {stabilizeFrames} 帧后各槽应为 {rounds} 次；min={mn} max={mx}。首槽未配对时先检查赋值是否曾等于属性初值而未产生通知");
+                   $"稳定化 {stabilizeFrames} 帧后各槽应为 {rounds} 次；min={mn} max={mx}。首槽未配对时先检查赋值是否曾等于属性初值而未产生通知");
         }
         finally
         {
@@ -1212,7 +1213,7 @@ public sealed class RGraphsTest : MonoBehaviour
         return true;
     }
 
-    /// <returns>首个 <paramref name="target"/> 不等的位置，否则 -1。</returns>
+    /// <returns>首个 <paramref name="target" /> 不等的位置，否则 -1。</returns>
     private static int StressCross_FirstIndexNotEqual(IReadOnlyList<int> slots, int n, int target)
     {
         for (int j = 0; j < n; j++)

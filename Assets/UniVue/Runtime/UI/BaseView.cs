@@ -207,7 +207,8 @@ namespace UniVue.UI
         /// <param name="mountNode">挂载点，这个挂载点必须属性当前UI节点</param>
         /// <param name="callback">回调，参数1-是否添加成功 参数2-被添加的组件</param>
         /// <typeparam name="T">组件类型，如果GameObject身上没有挂载此组件则会自动添加此组件</typeparam>
-        public void AddComponent<T>(string uiName, Transform mountNode = null, Action<bool, T> callback = null) where T : BaseComponent
+        public void AddComponent<T>(string uiName, Transform mountNode = null, Action<bool, T> callback = null)
+            where T : BaseComponent
         {
             CheckDisposedAndInitialized();
             if (Disposed)
@@ -261,7 +262,7 @@ namespace UniVue.UI
                 callback?.Invoke(true, component);
             });
         }
-        
+
         /// <summary>
         /// 显示指定名称的组件
         /// <para>如果有多个同名的组件则都会被打开</para>

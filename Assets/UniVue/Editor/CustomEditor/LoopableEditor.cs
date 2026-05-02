@@ -200,7 +200,7 @@ namespace UniVue.Editor
             }
 
             content.anchoredPosition = Vector2.zero;
-            
+
             foreach (RectTransform rectTransform in content)
             {
                 rectTransform.anchorMin = new Vector2(0, 1);
@@ -217,7 +217,7 @@ namespace UniVue.Editor
             //按下面的方法确保content的前面rows个为第一列或前cols个为第一行
             if (direction == ScrollDirection.Vertical) //垂直滚动时位置按行一行一行的设置
             {
-                for (int i = 0; i < rows; i++) 
+                for (int i = 0; i < rows; i++)
                 {
                     for (int j = 0; j < cols; j++)
                     {
@@ -231,7 +231,7 @@ namespace UniVue.Editor
             }
             else //水平滚动时位置按列一列一列的设置
             {
-                for (int i = 0; i < cols; ++i) 
+                for (int i = 0; i < cols; ++i)
                 {
                     for (int j = 0; j < rows; ++j)
                     {

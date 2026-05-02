@@ -95,11 +95,11 @@ namespace UniVue.UI
                 {
                     if (node.Key.type != RKeyType.Event || !node.Key.Equals(eventKey))
                         return node.Key.type == RKeyType.Event || node.Key.type == RKeyType.Graph;
-                    
+
                     foreach (RKey key in node.next.Keys)
                     {
                         if (key.type != RKeyType.Rendering || key.As<Action>() == null) continue;
-                        
+
                         if (!GetEnable(graph.Key.As<RGraph>()))
                             _disableGraphs[graph] = 2;
                         else
@@ -124,13 +124,13 @@ namespace UniVue.UI
                 {
                     if (node.Key.type != RKeyType.Model || !node.Key.Equals(model))
                         return node.Key.type == RKeyType.Model || node.Key.type == RKeyType.Graph;
-                    
+
                     if (node.next.TryGetValue(propertyName, out RNode pNode))
                     {
                         foreach (RKey key in pNode.next.Keys)
                         {
                             if (key.type != RKeyType.Rendering || key.As<Action>() == null) continue;
-                            
+
                             if (!GetEnable(graph.Key.As<RGraph>()))
                                 _disableGraphs[graph] = 2;
                             else
@@ -141,7 +141,7 @@ namespace UniVue.UI
                     foreach (RKey key in node.next.Keys)
                     {
                         if (key.type != RKeyType.Rendering || key.As<Action>() == null) continue;
-                        
+
                         if (!GetEnable(graph.Key.As<RGraph>()))
                             _disableGraphs[graph] = 2;
                         else

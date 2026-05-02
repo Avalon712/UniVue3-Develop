@@ -29,14 +29,16 @@ public sealed class ItemData : BaseModel
     public string Label { get; set; }
 
     public bool IsSelected { get; set; }
-    
+
     public int Index { get; set; }
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
+
 partial class VLoopListComponent
 {
-    [UniVue.UI.LazyInitUI("/VLoopList")]
-    public UniVue.UI.Widgets.LoopList VLoopList { get; }
+    [LazyInitUI("/VLoopList")]
+    public LoopList VLoopList { get; }
 }
+
 #endregion // UniVue Auto-Generated

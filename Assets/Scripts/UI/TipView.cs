@@ -5,21 +5,21 @@ public sealed partial class TipView : BaseView
 {
     public override int Layer { get; } = 5;
 
-    protected override void OnInit()
-    {
-    }
+    protected override void OnInit() { }
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
+
 partial class TipView
 {
-    [UniVue.UI.LazyInitUI("/CloseBtn")]
+    [LazyInitUI("/CloseBtn")]
     public CloseBtnUI CloseBtn { get; }
 
-    [UniVue.UI.LazyInitUI("/MessageTxt")]
-    public TMPro.TextMeshProUGUI MessageTxt { get; }
+    [LazyInitUI("/MessageTxt")]
+    public TextMeshProUGUI MessageTxt { get; }
 
-    [UniVue.UI.LazyInitUI("/TitleTxt")]
-    public TMPro.TextMeshProUGUI TitleTxt { get; }
+    [LazyInitUI("/TitleTxt")]
+    public TextMeshProUGUI TitleTxt { get; }
 }
+
 #endregion // UniVue Auto-Generated

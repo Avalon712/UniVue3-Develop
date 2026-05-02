@@ -1,19 +1,22 @@
 using System;
 using System.Collections;
+using System.Diagnostics;
 using UnityEngine;
 using UniVue.Timer;
+using Debug = UnityEngine.Debug;
+using Random = System.Random;
 
 public class TimerTest : MonoBehaviour
 {
-    private int _passed;
     private int _failed;
+    private int _passed;
 
-    void Start()
+    private void Start()
     {
         StartCoroutine(RunAllTests());
     }
 
-    IEnumerator RunAllTests()
+    private IEnumerator RunAllTests()
     {
         Debug.Log("========== TimerMgr 功能测试开始 ==========");
 
@@ -34,7 +37,7 @@ public class TimerTest : MonoBehaviour
         UnityEngine.Assertions.Assert.IsTrue(_failed == 0, $"TimerMgr 功能测试失败: {_failed} 个用例未通过");
     }
 
-    IEnumerator SafeRun(IEnumerator test)
+    private IEnumerator SafeRun(IEnumerator test)
     {
         while (true)
         {
@@ -72,7 +75,7 @@ public class TimerTest : MonoBehaviour
     // ================================================================
     //  基础延时触发
     // ================================================================
-    IEnumerator Test_BasicDelay()
+    private IEnumerator Test_BasicDelay()
     {
         Debug.Log("[Test] Test_BasicDelay");
         int count = 0;
@@ -88,7 +91,7 @@ public class TimerTest : MonoBehaviour
     // ================================================================
     //  间隔重复执行
     // ================================================================
-    IEnumerator Test_IntervalRepeat()
+    private IEnumerator Test_IntervalRepeat()
     {
         Debug.Log("[Test] Test_IntervalRepeat");
         int count = 0;
@@ -105,7 +108,7 @@ public class TimerTest : MonoBehaviour
     // ================================================================
     //  默认执行一次 (repeatCount=0 → 内部默认为1)
     // ================================================================
-    IEnumerator Test_RepeatOnce_Default()
+    private IEnumerator Test_RepeatOnce_Default()
     {
         Debug.Log("[Test] Test_RepeatOnce_Default");
         int count = 0;
@@ -118,7 +121,7 @@ public class TimerTest : MonoBehaviour
     // ================================================================
     //  无限重复 (repeatCount < 0)
     // ================================================================
-    IEnumerator Test_RepeatInfinite()
+    private IEnumerator Test_RepeatInfinite()
     {
         Debug.Log("[Test] Test_RepeatInfinite");
         int count = 0;
@@ -136,7 +139,7 @@ public class TimerTest : MonoBehaviour
     // ================================================================
     //  先延时再按间隔重复
     // ================================================================
-    IEnumerator Test_DelayThenInterval()
+    private IEnumerator Test_DelayThenInterval()
     {
         Debug.Log("[Test] Test_DelayThenInterval");
         int count = 0;
@@ -152,7 +155,7 @@ public class TimerTest : MonoBehaviour
     // ================================================================
     //  ExecuteCondition 阻塞执行但不移除
     // ================================================================
-    IEnumerator Test_ExecuteCondition_Block()
+    private IEnumerator Test_ExecuteCondition_Block()
     {
         Debug.Log("[Test] Test_ExecuteCondition_Block");
         bool allow = false;
@@ -172,7 +175,7 @@ public class TimerTest : MonoBehaviour
     // ================================================================
     //  CancelCondition 满足时移除定时器
     // ================================================================
-    IEnumerator Test_CancelCondition()
+    private IEnumerator Test_CancelCondition()
     {
         Debug.Log("[Test] Test_CancelCondition");
         bool shouldCancel = false;
@@ -191,7 +194,7 @@ public class TimerTest : MonoBehaviour
     // ================================================================
     //  Kill 手动移除定时器
     // ================================================================
-    IEnumerator Test_Kill()
+    private IEnumerator Test_Kill()
     {
         Debug.Log("[Test] Test_Kill");
         int count = 0;
@@ -209,16 +212,16 @@ public class TimerTest : MonoBehaviour
     // ================================================================
     //  TimerBuilder 流式API
     // ================================================================
-    IEnumerator Test_Builder_FluentAPI()
+    private IEnumerator Test_Builder_FluentAPI()
     {
         Debug.Log("[Test] Test_Builder_FluentAPI");
         int count = 0;
         ulong id = TimerMgr.Create()
-            .OfDelay(0.1f)
-            .OfInterval(0.1f)
-            .OfCount(2)
-            .OfCallback(() => count++)
-            .Build();
+                           .OfDelay(0.1f)
+                           .OfInterval(0.1f)
+                           .OfCount(2)
+                           .OfCallback(() => count++)
+                           .Build();
 
         Assert(id != 0, "Test_Builder_FluentAPI: Builder返回有效ID");
 
@@ -229,16 +232,16 @@ public class TimerTest : MonoBehaviour
     // ================================================================
     //  OfCallback 多次调用追加回调
     // ================================================================
-    IEnumerator Test_Builder_MultipleCallbacks()
+    private IEnumerator Test_Builder_MultipleCallbacks()
     {
         Debug.Log("[Test] Test_Builder_MultipleCallbacks");
         int countA = 0, countB = 0;
         TimerMgr.Create()
-            .OfDelay(0.1f)
-            .OfCount(1)
-            .OfCallback(() => countA++)
-            .OfCallback(() => countB++)
-            .Build();
+                .OfDelay(0.1f)
+                .OfCount(1)
+                .OfCallback(() => countA++)
+                .OfCallback(() => countB++)
+                .Build();
 
         yield return new WaitForSeconds(0.4f);
         Assert(countA == 1, "Test_Builder_MultipleCallbacks: 回调A被调用");
@@ -248,7 +251,7 @@ public class TimerTest : MonoBehaviour
     // ================================================================
     //  Kill 不存在的定时器不报错
     // ================================================================
-    IEnumerator Test_Kill_NonExistent()
+    private IEnumerator Test_Kill_NonExistent()
     {
         Debug.Log("[Test] Test_Kill_NonExistent");
         bool noException = true;
@@ -269,23 +272,23 @@ public class TimerTest : MonoBehaviour
     // ================================================================
     //  1000 个随机延时任务：回调时刻与期望间隔对比（毫秒），误差 ≤ 100ms 为通过
     // ================================================================
-    IEnumerator Test_Random1000_DelayAccuracy()
+    private IEnumerator Test_Random1000_DelayAccuracy()
     {
         Debug.Log("[Test] Test_Random1000_DelayAccuracy（约 30s+，请稍候）");
         const int total = 1000;
         const double toleranceMs = 100.0; // 0.1s
         int completed = 0;
         int timingFailures = 0;
-        var rnd = new System.Random();
+        Random rnd = new();
 
         for (int i = 0; i < total; i++)
         {
             float delaySec = (float)(rnd.NextDouble() * (30.0 - 0.5) + 0.5);
-            long createStamp = System.Diagnostics.Stopwatch.GetTimestamp();
+            long createStamp = Stopwatch.GetTimestamp();
             TimerMgr.AddTimer(delaySec, 0f, 1, () =>
             {
-                double elapsedMs = (System.Diagnostics.Stopwatch.GetTimestamp() - createStamp) * 1000.0 /
-                                   System.Diagnostics.Stopwatch.Frequency;
+                double elapsedMs = (Stopwatch.GetTimestamp() - createStamp) * 1000.0 /
+                                   Stopwatch.Frequency;
                 double expectedMs = delaySec * 1000.0;
                 if (Math.Abs(elapsedMs - expectedMs) > toleranceMs)
                     timingFailures++;
@@ -297,8 +300,8 @@ public class TimerTest : MonoBehaviour
         yield return new WaitUntil(() => completed >= total || Time.realtimeSinceStartup - waitStart > 38f);
 
         Assert(completed == total,
-            $"Test_Random1000_DelayAccuracy: 应完成 {total} 次回调（实际 {completed}）");
+               $"Test_Random1000_DelayAccuracy: 应完成 {total} 次回调（实际 {completed}）");
         Assert(timingFailures == 0,
-            $"Test_Random1000_DelayAccuracy: 与期望延时的偏差应 ≤ {toleranceMs}ms（超标次数 {timingFailures}）");
+               $"Test_Random1000_DelayAccuracy: 与期望延时的偏差应 ≤ {toleranceMs}ms（超标次数 {timingFailures}）");
     }
 }

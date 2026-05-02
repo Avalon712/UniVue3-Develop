@@ -133,7 +133,7 @@ namespace UniVue.UI.Widgets
             if (!_isDirty) return;
             _scrollRect.viewport.GetWorldCorners(_viewportCorners);
             int maxUpdateSteps = Mathf.Max(grid.x * grid.y, 1);
-            
+
             if (scrollDir == ScrollDirection.Vertical)
             {
                 GetChild(FirstIndex).Value.GetWorldCorners(_itemCorners);
@@ -142,7 +142,7 @@ namespace UniVue.UI.Widgets
                     while (_isDirty && maxUpdateSteps-- > 0)
                     {
                         GetChild(FirstIndex).Value.GetWorldCorners(_itemCorners);
-                        _isDirty = _itemCorners[0].y > _viewportCorners[1].y && 
+                        _isDirty = _itemCorners[0].y > _viewportCorners[1].y &&
                                    OnMoveItem(Direction.Up, _viewportCorners, _itemCorners);
                     }
                 }
@@ -154,7 +154,7 @@ namespace UniVue.UI.Widgets
                         while (_isDirty && maxUpdateSteps-- > 0)
                         {
                             GetChild(LastIndex).Value.GetWorldCorners(_itemCorners);
-                            _isDirty = _itemCorners[0].y < _viewportCorners[0].y && 
+                            _isDirty = _itemCorners[0].y < _viewportCorners[0].y &&
                                        OnMoveItem(Direction.Down, _viewportCorners, _itemCorners);
                         }
                     }
@@ -172,7 +172,7 @@ namespace UniVue.UI.Widgets
                     while (_isDirty && maxUpdateSteps-- > 0)
                     {
                         GetChild(FirstIndex).Value.GetWorldCorners(_itemCorners);
-                        _isDirty = _itemCorners[3].x < _viewportCorners[1].x && 
+                        _isDirty = _itemCorners[3].x < _viewportCorners[1].x &&
                                    OnMoveItem(Direction.Left, _viewportCorners, _itemCorners);
                     }
                 }
@@ -184,7 +184,7 @@ namespace UniVue.UI.Widgets
                         while (_isDirty && maxUpdateSteps-- > 0)
                         {
                             GetChild(LastIndex).Value.GetWorldCorners(_itemCorners);
-                            _isDirty = _itemCorners[3].x > _viewportCorners[3].x && 
+                            _isDirty = _itemCorners[3].x > _viewportCorners[3].x &&
                                        OnMoveItem(Direction.Right, _viewportCorners, _itemCorners);
                         }
                     }
@@ -220,7 +220,7 @@ namespace UniVue.UI.Widgets
         {
             int count = Count;
             _tail = _head;
-            
+
             foreach (RectTransform child in _children)
             {
                 LoopItem item = child.GetComponent<LoopItem>();
@@ -229,7 +229,7 @@ namespace UniVue.UI.Widgets
                 else
                     item.Hide();
             }
-            
+
             --_tail;
         }
 
@@ -316,7 +316,7 @@ namespace UniVue.UI.Widgets
             float temp = scrollDir == ScrollDirection.Vertical ? Count / (float)grid.x : Count / (float)grid.y;
             Vector2 directionVector = scrollDir == ScrollDirection.Vertical ? new Vector2(0, 1) : new Vector2(1, 0);
             _scrollRect.content.sizeDelta = (Mathf.FloorToInt(temp) + 1) * (Distance * directionVector);
-            
+
             //当前是否可以移动
             _scrollRect.movementType = Count <= gap.x * gap.y
                 ? ScrollRect.MovementType.Clamped
@@ -342,6 +342,7 @@ namespace UniVue.UI.Widgets
                 {
                     node = node.Previous;
                 }
+
                 return node;
             }
             else

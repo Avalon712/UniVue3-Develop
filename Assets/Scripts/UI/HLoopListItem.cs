@@ -1,10 +1,11 @@
-﻿using UniVue.UI;
+﻿using TMPro;
+using UniVue.UI;
 using UniVue.UI.Widgets;
 
 public partial class HLoopListItem : LoopItem
 {
     private ItemData _data;
-    
+
     public void SetData(ItemData data)
     {
         ItemData old = _data;
@@ -17,15 +18,17 @@ public partial class HLoopListItem : LoopItem
 
     private void Refresh()
     {
-        if(_data == null) return;
+        if (_data == null) return;
         IndexTxt.text = _data.Index.ToString();
     }
 }
 
 #region UniVue Auto-Generated — DO NOT MODIFY
+
 partial class HLoopListItem
 {
-    [UniVue.UI.LazyInitUI("/IndexTxt")]
-    public TMPro.TextMeshProUGUI IndexTxt { get; }
+    [LazyInitUI("/IndexTxt")]
+    public TextMeshProUGUI IndexTxt { get; }
 }
+
 #endregion // UniVue Auto-Generated

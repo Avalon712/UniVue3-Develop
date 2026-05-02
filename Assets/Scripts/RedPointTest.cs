@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Game.UI;
@@ -7,20 +6,20 @@ using UniVue.Coroutine;
 using UniVue.UI;
 
 /// <summary>
-/// 手动验证 <see cref="RedPointMgr"/>：静态 Key 编码 API、枚举树状态传播（帧末协程刷新父/根）、监听订阅、动态树 API。
-/// 帧末等待使用与 <see cref="RedPointMgr"/> 相同的 <see cref="YieldWaitForEndOfFrame"/>，并由 <see cref="CoroutineMgr"/> 驱动协程，
+/// 手动验证 <see cref="RedPointMgr" />：静态 Key 编码 API、枚举树状态传播（帧末协程刷新父/根）、监听订阅、动态树 API。
+/// 帧末等待使用与 <see cref="RedPointMgr" /> 相同的 <see cref="YieldWaitForEndOfFrame" />，并由 <see cref="CoroutineMgr" /> 驱动协程，
 /// 避免 Unity 内置协程与 CoroutineMgr 的 LateUpdate 顺序不确定。
 /// 不使用 Unity Test Framework。
 /// </summary>
 public sealed class RedPointTest : MonoBehaviour
 {
-    private int _passed;
-    private int _failed;
-
     /// <summary>
     /// 等待一帧
     /// </summary>
     private static readonly object WaitOneFrame = null;
+
+    private int _failed;
+    private int _passed;
 
     private void Start()
     {
@@ -31,7 +30,7 @@ public sealed class RedPointTest : MonoBehaviour
     {
         RunStaticKeyGeometryTests();
 
-        var mgr = new RedPointMgr(typeof(RedPointKey));
+        RedPointMgr mgr = new(typeof(RedPointKey));
         if (!mgr.IsRedPointKey((ulong)RedPointKey.Test_Main))
         {
             Debug.LogError("[RedPointTest] RedPointMgr 未从枚举初始化成功，跳过后续运行时测试。");
@@ -44,7 +43,7 @@ public sealed class RedPointTest : MonoBehaviour
 
         // 动态树 CreateRedPointTree 会分配形如 (2|rule)<<48 的根；若与已有枚举根同 Key 会覆盖节点。
         // 使用仅含一个占位根、且 Key 为 1<<48 的独立枚举初始化，避免与 2<<48 冲突。
-        var dynMgr = new RedPointMgr(typeof(DynamicTreeMountEnum));
+        RedPointMgr dynMgr = new(typeof(DynamicTreeMountEnum));
         if (!dynMgr.IsRedPointKey((ulong)DynamicTreeMountEnum.MountOnly))
         {
             Debug.LogWarning("[RedPointTest] 独立动态树 Mgr 初始化失败，跳过动态树测试。");
@@ -60,12 +59,6 @@ public sealed class RedPointTest : MonoBehaviour
     private void Summary()
     {
         Debug.Log($"[RedPointTest] 完成: {_passed} 通过, {_failed} 失败");
-    }
-
-    /// <summary>仅占位根 (1&lt;&lt;48)，无子节点枚举项，供动态 AddDependency 挂载。</summary>
-    private enum DynamicTreeMountEnum : ulong
-    {
-        MountOnly = (ulong)1 << 48
     }
 
     /// <summary>
@@ -122,7 +115,11 @@ public sealed class RedPointTest : MonoBehaviour
     {
         ulong main = (ulong)RedPointKey.Test_Main;
         int rootChanges = 0;
-        void OnRoot(bool _) => rootChanges++;
+
+        void OnRoot(bool _)
+        {
+            rootChanges++;
+        }
 
         mgr.ListenerRedPointStatus(main, OnRoot);
         mgr.SetActive((ulong)RedPointKey.Test_1_2, true);
@@ -139,7 +136,7 @@ public sealed class RedPointTest : MonoBehaviour
     private IEnumerator RunDynamicTreeTests(RedPointMgr mgr)
     {
         ulong mount = (ulong)DynamicTreeMountEnum.MountOnly;
-        Assert(mgr.GetStatus(mount) == false, "动态: 占位根初始为 false");
+        Assert(!mgr.GetStatus(mount), "动态: 占位根初始为 false");
 
         ulong dynRoot = mgr.CreateRedPointTree(RedPointRule.Or, "DynRoot");
         Assert(dynRoot != 0, "动态: CreateRedPointTree 非 0");
@@ -147,8 +144,8 @@ public sealed class RedPointTest : MonoBehaviour
         Assert(mgr.IsDynamicDependency(dynRoot), "动态: 新根标记为动态树");
         Assert(RedPointMgr.IsRoot(dynRoot), "动态: IsRoot");
 
-        ulong leafA = mgr.AddDependency(dynRoot, RedPointRule.Or);
-        ulong leafB = mgr.AddDependency(dynRoot, RedPointRule.Or);
+        ulong leafA = mgr.AddDependency(dynRoot);
+        ulong leafB = mgr.AddDependency(dynRoot);
         Assert(leafA != 0 && leafB != 0 && leafA != leafB, "动态: 两子 key 有效且互异");
 
         mgr.SetActive(leafA, true);
@@ -164,7 +161,7 @@ public sealed class RedPointTest : MonoBehaviour
         yield return WaitOneFrame;
         Assert(mgr.GetStatus(dynRoot), "动态 Or: 双子 true 根 true");
 
-        var children = new HashSet<ulong>();
+        HashSet<ulong> children = new();
         mgr.GetChildrenKeysNoneAlloc(dynRoot, children);
         Assert(children.Contains(leafA) && children.Contains(leafB), "动态: GetChildrenKeysNoneAlloc");
 
@@ -187,5 +184,11 @@ public sealed class RedPointTest : MonoBehaviour
             _failed++;
             Debug.LogError($"  [FAIL] {message}");
         }
+    }
+
+    /// <summary>仅占位根 (1&lt;&lt;48)，无子节点枚举项，供动态 AddDependency 挂载。</summary>
+    private enum DynamicTreeMountEnum : ulong
+    {
+        MountOnly = (ulong)1 << 48
     }
 }

@@ -4,14 +4,14 @@ using UnityEngine;
 using UniVue.Model;
 
 /// <summary>
-/// 手动验证 <see cref="NotifyPropertyChangedInjector"/> 注入后的行为：
-/// 继承 <see cref="BaseModel"/> 的自动属性 setter 会调用
-/// <see cref="BaseModel.CheckPropertyChanged{T}"/>，从而在值变化时触发 <see cref="BaseModel.OnPropertyChanged"/>。
+/// 手动验证 <see cref="NotifyPropertyChangedInjector" /> 注入后的行为：
+/// 继承 <see cref="BaseModel" /> 的自动属性 setter 会调用
+/// <see cref="BaseModel.CheckPropertyChanged{T}" />，从而在值变化时触发 <see cref="BaseModel.OnPropertyChanged" />。
 /// </summary>
 public sealed class PropertyNotifyChangedTest : MonoBehaviour
 {
-    private int _passed;
     private int _failed;
+    private int _passed;
 
     private void Start()
     {
@@ -25,8 +25,8 @@ public sealed class PropertyNotifyChangedTest : MonoBehaviour
 
     private void RunBasicAutoProperties()
     {
-        var model = new NotifyTestModel();
-        var log = new EventLog();
+        NotifyTestModel model = new();
+        EventLog log = new();
 
         model.OnPropertyChanged += log.Add;
 
@@ -62,8 +62,8 @@ public sealed class PropertyNotifyChangedTest : MonoBehaviour
 
     private void RunInheritanceBaseAndDerivedProperties()
     {
-        var m = new NotifyDerivedModel();
-        var log = new EventLog();
+        NotifyDerivedModel m = new();
+        EventLog log = new();
         m.OnPropertyChanged += log.Add;
 
         log.Clear();
@@ -86,8 +86,8 @@ public sealed class PropertyNotifyChangedTest : MonoBehaviour
 
     private void RunVirtualOverrideProperties()
     {
-        var d = new NotifyVirtualDerived();
-        var log = new EventLog();
+        NotifyVirtualDerived d = new();
+        EventLog log = new();
         d.OnPropertyChanged += log.Add;
 
         log.Clear();
@@ -111,13 +111,13 @@ public sealed class PropertyNotifyChangedTest : MonoBehaviour
     private void RunVirtualDispatchThroughBaseReference()
     {
         NotifyVirtualBase viaBase = new NotifyVirtualDerived();
-        var log = new EventLog();
+        EventLog log = new();
         viaBase.OnPropertyChanged += log.Add;
 
         log.Clear();
         viaBase.VirtualScore = 42;
         Assert(log.ContainsName("VirtualScore") && log.LastContainsValue("42"),
-            "多态: 经基类引用赋值 override 属性应走派生 setter 并通知");
+               "多态: 经基类引用赋值 override 属性应走派生 setter 并通知");
     }
 
     private void Assert(bool condition, string message)
@@ -138,20 +138,26 @@ public sealed class PropertyNotifyChangedTest : MonoBehaviour
     {
         private readonly List<string> _lines = new();
 
+        public bool IsEmpty => _lines.Count == 0;
+
         public void Add(BaseModel m, string name, object newValue)
         {
             _lines.Add($"[{name}] => {newValue}");
         }
 
-        public void Clear() => _lines.Clear();
-
-        public bool IsEmpty => _lines.Count == 0;
+        public void Clear()
+        {
+            _lines.Clear();
+        }
 
         public bool ContainsName(string name)
         {
             foreach (string line in _lines)
+            {
                 if (line.StartsWith($"[{name}]", StringComparison.Ordinal))
                     return true;
+            }
+
             return false;
         }
 
@@ -161,7 +167,10 @@ public sealed class PropertyNotifyChangedTest : MonoBehaviour
             return _lines[^1].IndexOf(value, StringComparison.Ordinal) >= 0;
         }
 
-        public override string ToString() => string.Join("\n", _lines);
+        public override string ToString()
+        {
+            return string.Join("\n", _lines);
+        }
     }
 }
 

@@ -5,15 +5,15 @@ using UniVue.Coroutine;
 
 public class CoroutineTest : MonoBehaviour
 {
-    private int _passed;
     private int _failed;
+    private int _passed;
 
-    void Start()
+    private void Start()
     {
         StartCoroutine(RunAllTests());
     }
 
-    IEnumerator RunAllTests()
+    private IEnumerator RunAllTests()
     {
         Debug.Log("========== CoroutineMgr 功能测试开始 ==========");
 
@@ -38,7 +38,7 @@ public class CoroutineTest : MonoBehaviour
         UnityEngine.Assertions.Assert.IsTrue(_failed == 0, $"CoroutineMgr 功能测试失败: {_failed} 个用例未通过");
     }
 
-    IEnumerator SafeRun(IEnumerator test)
+    private IEnumerator SafeRun(IEnumerator test)
     {
         while (true)
         {
@@ -82,7 +82,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  基础运行与完成
     // ================================================================
-    IEnumerator Test_Run_BasicCompletion()
+    private IEnumerator Test_Run_BasicCompletion()
     {
         Debug.Log("[Test] 基础运行与完成");
         bool step1 = false, step2 = false, step3 = false;
@@ -107,7 +107,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  yield return null 帧间暂停
     // ================================================================
-    IEnumerator Test_YieldNull_WaitsOneFrame()
+    private IEnumerator Test_YieldNull_WaitsOneFrame()
     {
         Debug.Log("[Test] yield return null 帧间暂停");
         int frameCounter = 0;
@@ -130,7 +130,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  yield return Func<bool> (Predicate)
     // ================================================================
-    IEnumerator Test_YieldPredicate()
+    private IEnumerator Test_YieldPredicate()
     {
         Debug.Log("[Test] yield return Func<bool> 谓词等待");
         bool gate = false;
@@ -154,7 +154,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  yield return IEnumerator 嵌套协程
     // ================================================================
-    IEnumerator Test_YieldNestedCoroutine()
+    private IEnumerator Test_YieldNestedCoroutine()
     {
         Debug.Log("[Test] yield return IEnumerator 嵌套协程");
         bool outerStart = false, innerDone = false, outerEnd = false;
@@ -183,7 +183,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  yield return CoroutineID 等待另一个协程完成
     // ================================================================
-    IEnumerator Test_YieldCoroutineID_Dependency()
+    private IEnumerator Test_YieldCoroutineID_Dependency()
     {
         Debug.Log("[Test] yield return CoroutineID 协程依赖");
         bool depDone = false, mainDone = false;
@@ -216,7 +216,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  Kill 杀死协程
     // ================================================================
-    IEnumerator Test_Kill()
+    private IEnumerator Test_Kill()
     {
         Debug.Log("[Test] Kill 杀死协程");
         bool step1 = false, step2 = false;
@@ -242,7 +242,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  Stop / Resume 暂停与恢复
     // ================================================================
-    IEnumerator Test_Stop_Resume()
+    private IEnumerator Test_Stop_Resume()
     {
         Debug.Log("[Test] Stop / Resume 暂停与恢复");
         int progress = 0;
@@ -273,7 +273,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  CombineDependency 依赖编排
     // ================================================================
-    IEnumerator Test_CombineDependency()
+    private IEnumerator Test_CombineDependency()
     {
         Debug.Log("[Test] CombineDependency 依赖编排");
         bool aDone = false, bDone = false;
@@ -308,7 +308,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  CombineDependencies 多依赖
     // ================================================================
-    IEnumerator Test_CombineDependency_Multi()
+    private IEnumerator Test_CombineDependency_Multi()
     {
         Debug.Log("[Test] CombineDependencies 多依赖");
         bool dep1Done = false, dep2Done = false, mainDone = false;
@@ -352,14 +352,31 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  多协程并发
     // ================================================================
-    IEnumerator Test_MultipleConcurrentCoroutines()
+    private IEnumerator Test_MultipleConcurrentCoroutines()
     {
         Debug.Log("[Test] 多协程并发执行");
         int count1 = 0, count2 = 0, count3 = 0;
 
-        IEnumerator C1() { count1++; yield return null; count1++; }
-        IEnumerator C2() { count2++; yield return null; count2++; }
-        IEnumerator C3() { count3++; yield return null; count3++; }
+        IEnumerator C1()
+        {
+            count1++;
+            yield return null;
+            count1++;
+        }
+
+        IEnumerator C2()
+        {
+            count2++;
+            yield return null;
+            count2++;
+        }
+
+        IEnumerator C3()
+        {
+            count3++;
+            yield return null;
+            count3++;
+        }
 
         CoroutineMgr.Run(C1());
         CoroutineMgr.Run(C2());
@@ -374,12 +391,16 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  带别名运行
     // ================================================================
-    IEnumerator Test_RunWithAliasName()
+    private IEnumerator Test_RunWithAliasName()
     {
         Debug.Log("[Test] 带别名运行协程");
         bool done = false;
 
-        IEnumerator Coroutine() { done = true; yield break; }
+        IEnumerator Coroutine()
+        {
+            done = true;
+            yield break;
+        }
 
         CoroutineID id = CoroutineMgr.Run(Coroutine(), "TestAlias");
         Assert(id.id != 0, "返回了有效的CoroutineID");
@@ -391,12 +412,16 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  RunAsCoroutine 扩展方法
     // ================================================================
-    IEnumerator Test_RunAsCoroutine_Extension()
+    private IEnumerator Test_RunAsCoroutine_Extension()
     {
         Debug.Log("[Test] RunAsCoroutine 扩展方法");
         bool done = false;
 
-        IEnumerator Coroutine() { done = true; yield break; }
+        IEnumerator Coroutine()
+        {
+            done = true;
+            yield break;
+        }
 
         CoroutineID id = Coroutine().RunAsCoroutine();
         Assert(id.id != 0, "扩展方法返回有效CoroutineID");
@@ -408,7 +433,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  yield return WaitUntil
     // ================================================================
-    IEnumerator Test_YieldWaitUntil()
+    private IEnumerator Test_YieldWaitUntil()
     {
         Debug.Log("[Test] yield return WaitUntil");
         bool condition = false;
@@ -432,7 +457,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  yield return WaitWhile
     // ================================================================
-    IEnumerator Test_YieldWaitWhile()
+    private IEnumerator Test_YieldWaitWhile()
     {
         Debug.Log("[Test] yield return WaitWhile");
         bool blocking = true;
@@ -456,7 +481,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  Kill 不存在的协程不报错
     // ================================================================
-    IEnumerator Test_Kill_NonExistent()
+    private IEnumerator Test_Kill_NonExistent()
     {
         Debug.Log("[Test] Kill 不存在的协程不报错");
         bool noException = true;
@@ -476,7 +501,7 @@ public class CoroutineTest : MonoBehaviour
     // ================================================================
     //  Stop/Resume 对非运行中协程无效果
     // ================================================================
-    IEnumerator Test_Stop_NonRunning()
+    private IEnumerator Test_Stop_NonRunning()
     {
         Debug.Log("[Test] Stop/Resume 对非运行协程无副作用");
         bool noException = true;

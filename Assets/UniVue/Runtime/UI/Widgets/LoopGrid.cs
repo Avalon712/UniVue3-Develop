@@ -18,11 +18,11 @@ namespace UniVue.UI.Widgets
                 return cols * rows - rows; //倒数第二列的第一个索引
             }
         }
-        
+
         private int ViewCols => grid.x - (scrollDir == ScrollDirection.Vertical ? 0 : 1);
 
         private int ViewRows => grid.y - (scrollDir == ScrollDirection.Vertical ? 1 : 0);
-        
+
         public override void Refresh(bool force = false)
         {
             //重新计算Content的大小
@@ -76,7 +76,7 @@ namespace UniVue.UI.Widgets
             {
                 Vector2 pos = node.Value.anchoredPosition;
                 pos.y -= Distance.y;
-                
+
                 RectTransform itemTrans = node2.Value;
                 itemTrans.anchoredPosition = pos; //位置修改
 
@@ -89,7 +89,7 @@ namespace UniVue.UI.Widgets
                     OnItemRender?.Invoke(_tail, item);
                 else
                     item.Hide();
-                
+
                 node = node.Next;
                 node2 = node2.Next;
             }
@@ -122,7 +122,7 @@ namespace UniVue.UI.Widgets
                 //向下滑动全部显示
                 LoopItem item = itemTrans.GetComponent<LoopItem>();
                 OnItemRender?.Invoke(_head, item);
-                
+
                 node = node.Previous;
                 node2 = node2.Previous;
             }
@@ -140,10 +140,10 @@ namespace UniVue.UI.Widgets
             //向左滑动了一个Item的距离
             int dataCount = Count;
             int rows = ViewRows;
-            
+
             LinkedListNode<RectTransform> node = GetChild(lastColFirstIdx);
             LinkedListNode<RectTransform> node2 = GetChild(0);
-            
+
             for (int i = 0; i < rows; i++)
             {
                 Vector2 pos = node.Value.anchoredPosition;
@@ -160,7 +160,7 @@ namespace UniVue.UI.Widgets
                     OnItemRender?.Invoke(_tail, item);
                 else
                     item.Hide();
-                
+
                 node = node.Next;
                 node2 = node2.Next;
             }
@@ -178,10 +178,10 @@ namespace UniVue.UI.Widgets
             //当前正在向右滑动
             int dataCount = Count;
             int rows = ViewRows;
-            
+
             LinkedListNode<RectTransform> node = GetChild(rows - 1);
             LinkedListNode<RectTransform> node2 = GetChild(lastColFirstIdx + rows - 1);
-            
+
             for (int i = rows - 1; i >= 0; i--)
             {
                 Vector2 pos = node.Value.anchoredPosition;
@@ -196,7 +196,7 @@ namespace UniVue.UI.Widgets
                 //向右滑动全部显示
                 LoopItem item = itemTrans.GetComponent<LoopItem>();
                 OnItemRender?.Invoke(_head, item);
-                
+
                 node = node.Previous;
                 node2 = node2.Previous;
             }
